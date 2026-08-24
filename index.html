@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Smash burgers estilo American Diner. Pedí y recibí tu pedido por WhatsApp." />
+  <meta name="theme-color" content="#1a46c8" />
+  <title>La Brasa Burger — American Diner</title>
+
+  <!-- Tipografías retro (con fallback si no hay conexión) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Pacifico&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       1. TOKENS DE DISEÑO — Diner azul + cuadros rojos (estilo Smashy's)
+       ============================================================ */
+    :root {
+      --blue:       #1a46c8;   /* azul cobalto (paredes / marca) */
+      --blue-deep:  #12328f;
+      --blue-bright:#2f5cf0;
+      --red:        #e0231a;   /* rojo señalética / precios */
+      --red-deep:   #b3160f;
+      --white:      #ffffff;
+      --board:      #fbf7ee;   /* blanco cálido de los tableros */
+      --card:       #ffffff;
+      --ink:        #16181d;   /* contornos / texto */
+      --ink-soft:   #5f6570;
+
+      --radius:    18px;
+      --radius-sm: 12px;
+      --gap:       16px;
+      --max-width: 720px;
+      --bar-h:     92px;
+      --checker:   26px;       /* tamaño del cuadro del ajedrez */
+
+      --shadow:      0 16px 34px rgba(8, 20, 60, .35);
+      --shadow-card: 5px 5px 0 var(--ink);
+
+      --font-script:  "Pacifico", "Brush Script MT", cursive;
+      --font-display: "Anton", "Arial Narrow", "Impact", sans-serif;
+      --font-body:    "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    /* ============================================================
+       2. RESET Y BASE (mobile-first)
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--ink);
+      line-height: 1.5;
+      background-color: var(--blue);
+      background-image:
+        radial-gradient(120% 80% at 50% -10%, var(--blue-bright) 0%, transparent 55%);
+      background-attachment: fixed;
+      padding-bottom: calc(var(--bar-h) + 24px + env(safe-area-inset-bottom));
+    }
+
+    img { max-width: 100%; display: block; }
+    h1, h2, h3 { margin: 0; line-height: 1; }
+
+    .wrap {
+      width: 100%;
+      max-width: var(--max-width);
+      margin-inline: auto;
+      padding-inline: var(--gap);
+    }
+
+    /* --- Cenefa de cuadros rojo/blanco (gingham) reutilizable --- */
+    .checker-strip {
+      height: var(--checker);
+      border-block: 3px solid var(--ink);
+      background-color: var(--white);
+      background-image:
+        linear-gradient(45deg, var(--red) 25%, transparent 25%, transparent 75%, var(--red) 75%),
+        linear-gradient(45deg, var(--red) 25%, transparent 25%, transparent 75%, var(--red) 75%);
+      background-size: var(--checker) var(--checker);
+      background-position: 0 0, calc(var(--checker) / 2) calc(var(--checker) / 2);
+    }
+
+    /* --- Piso ajedrezado blanco/negro (referencia diner) --- */
+    .checker-floor {
+      height: 30px;
+      background-color: var(--white);
+      background-image:
+        linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%),
+        linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+    }
+
+    /* --- Sello "starburst" (como el POR SOLO $199) --- */
+    .seal {
+      position: relative;
+      width: 92px;
+      height: 92px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--white);
+      transform: rotate(-8deg);
+      flex: 0 0 auto;
+    }
+    .seal::before {
+      content: "";
+      position: absolute;
+      inset: -8px;
+      z-index: 0;
+      background: repeating-conic-gradient(var(--red) 0 9deg, var(--red-deep) 9deg 18deg);
+      border-radius: 50%;
+    }
+    .seal-face {
+      position: relative;
+      z-index: 1;
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 2px dashed rgba(255, 255, 255, .85);
+      display: grid;
+      place-items: center;
+      line-height: 1;
+      padding: 4px;
+    }
+    .seal-small { font-family: var(--font-body); font-size: .5rem; font-weight: 800; letter-spacing: .05em; }
+    .seal-big   { font-family: var(--font-display); font-size: 1.25rem; }
+
+    /* ============================================================
+       3. ENCABEZADO
+       ============================================================ */
+    .site-header {
+      text-align: center;
+      color: var(--white);
+      padding: 30px 0 24px;
+      position: relative;
+    }
+
+    .brand-mark { font-size: 2.2rem; line-height: 1; margin-bottom: 2px; }
+
+    .brand-name {
+      font-family: var(--font-script);
+      font-weight: 400;
+      font-size: clamp(2.6rem, 11vw, 4.2rem);
+      color: var(--white);
+      text-shadow: 3px 3px 0 var(--red), 6px 6px 0 rgba(0, 0, 0, .28);
+    }
+
+    .brand-tagline {
+      margin: 10px auto 0;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: .18em;
+      color: #ffd9a0;
+    }
+
+    .header-seal {
+      position: absolute;
+      top: 14px;
+      right: max(10px, calc((100vw - var(--max-width)) / 2 + 8px));
+    }
+
+    .schedule {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 0 0;
+      font-size: .82rem;
+      font-weight: 600;
+      padding: 7px 16px;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: var(--board);
+      color: var(--ink);
+    }
+
+    .status-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: #22a559;
+      box-shadow: 0 0 0 3px rgba(34, 165, 89, .25);
+    }
+
+    /* ============================================================
+       4. TABLERO DE AVISOS (marquesina / cartelera retro)
+       ============================================================ */
+    .marquee {
+      margin: 20px auto 0;
+      max-width: var(--max-width);
+      background: var(--red);
+      border: 4px solid var(--ink);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Cenefa de cuadros arriba y abajo del tablero */
+    .marquee::before,
+    .marquee::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      height: 14px;
+      background-color: var(--white);
+      background-image:
+        linear-gradient(45deg, var(--red) 25%, transparent 25%, transparent 75%, var(--red) 75%),
+        linear-gradient(45deg, var(--red) 25%, transparent 25%, transparent 75%, var(--red) 75%);
+      background-size: 14px 14px;
+      background-position: 0 0, 7px 7px;
+      z-index: 2;
+    }
+    .marquee::before { top: 0; }
+    .marquee::after  { bottom: 0; }
+
+    .marquee-inner {
+      padding: 26px 16px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .marquee-heading {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      letter-spacing: .04em;
+      color: var(--white);
+      text-shadow: 2px 2px 0 var(--red-deep);
+    }
+
+    .marquee-track-mask {
+      overflow: hidden;
+      border-block: 2px dashed rgba(255, 255, 255, .5);
+      padding: 8px 0;
+    }
+
+    .marquee-track {
+      display: inline-flex;
+      gap: 3rem;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: slide 24s linear infinite;
+      will-change: transform;
+    }
+
+    .marquee-track span { font-weight: 700; font-size: .95rem; color: #fff; }
+    .marquee-track b { color: #ffe08a; }
+
+    @keyframes slide {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .marquee:hover .marquee-track { animation-play-state: paused; }
+
+    .notice-list {
+      list-style: none;
+      margin: 6px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+    .notice {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+      color: #fff;
+      font-size: .85rem;
+    }
+    .notice-icon { font-size: 1rem; }
+    .notice b { color: #ffe08a; }
+
+    /* ============================================================
+       5. TABLEROS DE MENÚ + TARJETAS
+       ============================================================ */
+    .menu-board {
+      margin-top: 24px;
+      background: var(--board);
+      border: 4px solid var(--ink);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .menu-board-body { padding: 18px 16px; }
+
+    .category-title {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      letter-spacing: .03em;
+      color: var(--white);
+      background: var(--blue);
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      padding: 6px 20px 3px;
+      transform: rotate(-1.2deg);
+      box-shadow: var(--shadow-card);
+      margin-bottom: 18px;
+    }
+
+    .product-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 14px;
+    }
+
+    .product {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 14px;
+      background: var(--card);
+      border: 3px solid var(--ink);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .product.is-active {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--red);
+    }
+
+    /* Placeholder de imagen (reemplazable por <img> vía Treinta Pro) */
+    .product-media {
+      width: 92px; height: 92px;
+      border-radius: 10px;
+      border: 2px solid var(--ink);
+      background: linear-gradient(135deg, #ffe1b0, #ffbf7a);
+      display: grid;
+      place-items: center;
+      font-size: 2.3rem;
+      overflow: hidden;
+    }
+    .product-media img { width: 100%; height: 100%; object-fit: cover; }
+
+    .product-body { display: flex; flex-direction: column; min-width: 0; }
+
+    .product-name {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      letter-spacing: .02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-family: var(--font-body);
+      font-size: .58rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--white);
+      background: var(--red);
+      border: 1.5px solid var(--ink);
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+
+    .product-desc { margin: 3px 0 10px; font-size: .84rem; color: var(--ink-soft); }
+
+    .product-footer {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .product-price {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      color: var(--red-deep);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* --- Stepper (azul = interacción) --- */
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--white);
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      padding: 3px;
+    }
+    .stepper button {
+      width: 34px; height: 34px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      background: var(--blue);
+      color: var(--white);
+      display: grid;
+      place-items: center;
+      transition: transform .08s ease, background .15s ease;
+    }
+    .stepper button:hover { background: var(--blue-deep); }
+    .stepper button:active { transform: scale(.9); }
+    .stepper button:disabled { opacity: .4; cursor: not-allowed; background: #9aa6bd; }
+    .stepper .qty { min-width: 24px; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+    /* ============================================================
+       6. FORMULARIO DEL CLIENTE
+       ============================================================ */
+    .form-board { margin-top: 24px; }
+
+    .form-card {
+      background: var(--board);
+      border: 4px solid var(--ink);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 16px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .field { display: grid; gap: 7px; }
+
+    .field label, .fieldset-legend {
+      font-size: .78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--ink-soft);
+    }
+
+    .field input[type="text"] {
+      width: 100%;
+      padding: 13px 14px;
+      font: inherit;
+      color: var(--ink);
+      background: var(--white);
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-sm);
+    }
+    .field input::placeholder { color: #a5aab4; }
+
+    .field input:focus-visible, .option:focus-within {
+      outline: 3px solid var(--blue);
+      outline-offset: 2px;
+    }
+    .field input[aria-invalid="true"] { border-color: var(--red); background: #fdeceb; }
+
+    fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .options { display: grid; gap: 8px; }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 14px;
+      background: var(--white);
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .option input { accent-color: var(--blue); width: 18px; height: 18px; margin: 0; }
+    .option:has(input:checked) { border-color: var(--blue); background: #eaf0fb; }
+    .option-text { font-size: .92rem; }
+    .option-hint { display: block; font-size: .78rem; font-weight: 400; color: var(--ink-soft); }
+
+    .form-error {
+      display: none;
+      margin: 0;
+      font-size: .86rem;
+      font-weight: 600;
+      color: var(--red-deep);
+      background: #fdeceb;
+      border: 2px solid var(--red);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+    .form-error.is-visible { display: block; }
+
+    /* ============================================================
+       7. BARRA FLOTANTE (total + WhatsApp)
+       ============================================================ */
+    .cart-bar {
+      position: fixed;
+      inset: auto 0 0 0;
+      z-index: 30;
+      background: var(--board);
+      border-top: 4px solid var(--ink);
+      box-shadow: 0 -8px 24px rgba(8, 20, 60, .3);
+    }
+
+    .cart-bar-inner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-block: 12px calc(12px + env(safe-area-inset-bottom));
+    }
+    .cart-summary { flex: 0 0 auto; min-width: 0; }
+
+    .cart-count {
+      margin: 0;
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--ink-soft);
+    }
+    .cart-total {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--red-deep);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .btn-whatsapp {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      border: 3px solid var(--ink);
+      border-radius: 999px;
+      padding: 14px 18px;
+      font-family: var(--font-body);
+      font-weight: 800;
+      font-size: .96rem;
+      cursor: pointer;
+      color: var(--white);
+      background: var(--blue);
+      box-shadow: 4px 4px 0 var(--ink);
+      transition: transform .08s ease, background .15s ease, box-shadow .08s ease;
+    }
+    .btn-whatsapp:hover { background: var(--blue-deep); }
+    .btn-whatsapp:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .btn-whatsapp:disabled { opacity: .5; cursor: not-allowed; background: #9aa6bd; box-shadow: none; transform: none; }
+    .btn-whatsapp svg { width: 20px; height: 20px; flex: 0 0 auto; }
+
+    .site-footer {
+      text-align: center;
+      font-size: .78rem;
+      color: #cfe0ff;
+      margin-top: 26px;
+    }
+
+    /* ============================================================
+       8. PANTALLAS GRANDES
+       ============================================================ */
+    @media (min-width: 700px) {
+      :root { --gap: 24px; }
+      .product-list { grid-template-columns: repeat(2, 1fr); }
+      .cart-bar-inner { gap: 20px; }
+      .btn-whatsapp { flex: 0 0 auto; padding: 15px 30px; }
+      .cart-summary { flex: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .marquee-track { padding-left: 0; }
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px; height: 1px;
+      margin: -1px; padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===================== ENCABEZADO ===================== -->
+  <header class="site-header">
+    <div class="header-seal seal" aria-hidden="true">
+      <span class="seal-face">
+        <span class="seal-small">MADE WITH</span>
+        <span class="seal-big">♥</span>
+      </span>
+    </div>
+
+    <div class="wrap">
+      <div class="brand-mark" aria-hidden="true">🍔</div>
+      <h1 class="brand-name">La Brasa Burger</h1>
+      <p class="brand-tagline">BURGERS · FRIES · MALTS</p>
+      <p class="schedule">
+        <span class="status-dot" aria-hidden="true"></span>
+        Abierto: <strong>Mar a Dom · 19:00 a 00:00</strong>
+      </p>
+    </div>
+  </header>
+
+  <div class="checker-strip" aria-hidden="true"></div>
+
+  <!-- ===================== TABLERO DE AVISOS =====================
+       Editá los avisos del día en el arreglo CONFIG.notices (en el <script>).
+       Se reflejan solos en la cinta que se desplaza y en la lista.
+       ============================================================ -->
+  <div class="wrap">
+    <section class="marquee" aria-label="Avisos del día">
+      <div class="marquee-inner">
+        <h2 class="marquee-heading">★ Avisos de hoy ★</h2>
+        <div class="marquee-track-mask" aria-hidden="true">
+          <div class="marquee-track" id="marquee-track"></div>
+        </div>
+        <ul class="notice-list" id="notice-list"></ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== MENÚ ===================== -->
+  <main class="wrap" id="menu"></main>
+
+  <!-- ===================== DATOS DEL CLIENTE ===================== -->
+  <div class="wrap">
+    <section class="form-board" aria-labelledby="title-checkout">
+      <span class="category-title" id="title-checkout">Tus datos</span>
+      <form class="form-card" id="order-form" novalidate>
+        <div class="field">
+          <label for="customer-name">Nombre y apellido</label>
+          <input type="text" id="customer-name" name="customerName"
+                 placeholder="Ej: Joaquín Pérez" autocomplete="name" required />
+        </div>
+
+        <fieldset>
+          <legend class="fieldset-legend">Método de entrega</legend>
+          <div class="options">
+            <label class="option">
+              <input type="radio" name="deliveryMethod" value="pickup" checked />
+              <span class="option-text">
+                Retiro en el local
+                <span class="option-hint">Av. Siempre Viva 742 · sin costo</span>
+              </span>
+            </label>
+            <label class="option">
+              <input type="radio" name="deliveryMethod" value="delivery" />
+              <span class="option-text">
+                Envío a domicilio (Delivery)
+                <span class="option-hint">Coordinamos la dirección por WhatsApp</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <p class="form-error" id="form-error" role="alert"></p>
+      </form>
+    </section>
+
+    <footer class="site-footer">
+      <p>© <span id="year"></span> La Brasa Burger · Pedidos por WhatsApp</p>
+    </footer>
+  </div>
+
+  <div class="checker-floor" aria-hidden="true"></div>
+
+  <!-- ===================== BARRA FLOTANTE ===================== -->
+  <aside class="cart-bar" aria-label="Resumen del pedido">
+    <div class="wrap cart-bar-inner">
+      <div class="cart-summary">
+        <p class="cart-count" id="cart-count">Carrito vacío</p>
+        <p class="cart-total" id="cart-total" aria-live="polite" aria-atomic="true">$0</p>
+      </div>
+      <button type="submit" form="order-form" class="btn-whatsapp" id="btn-whatsapp" disabled>
+        <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+          <path d="M16 3C9 3 3.5 8.5 3.5 15.4c0 2.4.7 4.7 1.9 6.7L3 29l7.1-2.3c1.9 1 4 1.6 6 1.6 6.9 0 12.5-5.5 12.5-12.4C28.6 8.5 23 3 16 3zm0 22.6c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-4.2 1.4 1.4-4.1-.2-.4c-1-1.6-1.5-3.4-1.5-5.2 0-5.5 4.5-9.9 10-9.9s10 4.4 10 9.9-4.5 9.9-10 9.9zm5.5-7.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2s-.8 1-.9 1.1c-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.6-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5s-.7-1.6-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.2 3.4 5.4 4.8 2 .8 2.7.9 3.7.8.6-.1 1.8-.7 2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/>
+        </svg>
+        Enviar pedido por WhatsApp
+      </button>
+    </div>
+  </aside>
+
+  <script>
+    "use strict";
+
+    /* ============================================================
+       CONFIGURACIÓN DEL NEGOCIO
+       ============================================================ */
+    const CONFIG = {
+      businessName: "La Brasa Burger",
+      /* Reemplazá por tu número real: formato internacional, sin + ni espacios.
+         Ej. México: 52 55 1234 5678 -> "525512345678" */
+      whatsappNumber: "52XXXXXXXXXX",
+      currency: "MXN",
+      locale: "es-MX",
+
+      /* Avisos del día: se muestran en la cinta y en la lista */
+      notices: [
+        { icon: "🛵", label: "Delivery habilitado", text: "Roma Norte, Condesa, Juárez y Cuauhtémoc." },
+        { icon: "⏱️", label: "Demora estimada",     text: "Delivery 40-55 min · Retiro 20 min." },
+        { icon: "🔥", label: "Combo del día",        text: "Sencilla + papas + agua por solo $199 hasta las 21:00." }
+      ]
+    };
+
+    /* ============================================================
+       CATÁLOGO — 4 hamburguesas en categorías (+ acompañamientos)
+       Cada item admite "image" (URL) para conectar con Treinta Pro.
+       ============================================================ */
+    const MENU = [
+      {
+        category: "Las Clásicas",
+        items: [
+          { id: "california", name: "California Soul", description: "Cheeseburger smash short rib, cheddar, cebolla caramelizada y salsa de la casa.", price: 149, image: null, emoji: "🍔", badge: null },
+          { id: "double",     name: "Doble Trouble",  description: "Doble carne smash, doble cheddar y cebolla a la plancha.",                     price: 199, image: null, emoji: "🍔", badge: "La más pedida" }
+        ]
+      },
+      {
+        category: "Las Especiales",
+        items: [
+          { id: "jalapeno",   name: "Jalapeño Smash", description: "Queso suizo, jalapeño crudo, cebolla caramelizada y salsa smashy.",           price: 179, image: null, emoji: "🌶️", badge: null },
+          { id: "blue",       name: "Blue Diner",     description: "Queso azul, cebolla caramelizada y rúcula fresca.",                            price: 189, image: null, emoji: "🧀", badge: null }
+        ]
+      },
+      {
+        category: "Para acompañar",
+        items: [
+          { id: "fries",      name: "Smashy Fries",   description: "Papas a la francesa con nuestra salsa especial.",                              price: 65,  image: null, emoji: "🍟", badge: null },
+          { id: "soda",       name: "Refresco",       description: "Línea Coca-Cola bien fría.",                                                   price: 45,  image: null, emoji: "🥤", badge: null }
+        ]
+      }
+    ];
+
+    /* Índice plano id -> producto */
+    const PRODUCTS = new Map(MENU.flatMap(g => g.items).map(i => [i.id, i]));
+
+    /* Estado del carrito: id -> cantidad */
+    const cart = new Map();
+
+    /* ============================================================
+       UTILIDADES
+       ============================================================ */
+    const money = new Intl.NumberFormat(CONFIG.locale, {
+      style: "currency", currency: CONFIG.currency,
+      minimumFractionDigits: 0, maximumFractionDigits: 0
+    });
+    const formatPrice = v => money.format(v);
+    const $ = s => document.querySelector(s);
+
+    const dom = {
+      menu:       $("#menu"),
+      marquee:    $("#marquee-track"),
+      noticeList: $("#notice-list"),
+      cartTotal:  $("#cart-total"),
+      cartCount:  $("#cart-count"),
+      btn:        $("#btn-whatsapp"),
+      form:       $("#order-form"),
+      name:       $("#customer-name"),
+      error:      $("#form-error"),
+      year:       $("#year")
+    };
+
+    /* ============================================================
+       AVISOS (cinta + lista)
+       ============================================================ */
+    function renderNotices() {
+      dom.noticeList.innerHTML = CONFIG.notices.map(n =>
+        '<li class="notice"><span class="notice-icon" aria-hidden="true">' + n.icon + '</span>' +
+        '<span><b>' + n.label + ':</b> ' + n.text + '</span></li>'
+      ).join("");
+
+      const piece = CONFIG.notices.map(n =>
+        '<span>' + n.icon + ' <b>' + n.label + ':</b> ' + n.text + '</span>'
+      ).join('<span aria-hidden="true">•</span>');
+      dom.marquee.innerHTML = piece + '<span aria-hidden="true">•</span>' + piece;
+    }
+
+    /* ============================================================
+       RENDER DEL MENÚ
+       ============================================================ */
+    function productTemplate(item) {
+      const media = item.image
+        ? '<img src="' + item.image + '" alt="' + item.name + '" />'
+        : '<span aria-hidden="true">' + item.emoji + '</span>';
+
+      const li = document.createElement("li");
+      li.className = "product";
+      li.dataset.id = item.id;
+      li.innerHTML = [
+        '<div class="product-media">', media, '</div>',
+        '<div class="product-body">',
+          '<h3 class="product-name">', item.name,
+            item.badge ? '<span class="tag">' + item.badge + '</span>' : "",
+          '</h3>',
+          '<p class="product-desc">' + item.description + '</p>',
+          '<div class="product-footer">',
+            '<p class="product-price">' + formatPrice(item.price) + '</p>',
+            '<div class="stepper">',
+              '<button type="button" data-action="remove" aria-label="Quitar una unidad de ' + item.name + '" disabled>&minus;</button>',
+              '<span class="qty" data-qty aria-live="polite" aria-label="Cantidad de ' + item.name + '">0</span>',
+              '<button type="button" data-action="add" aria-label="Agregar una unidad de ' + item.name + '">+</button>',
+            '</div>',
+          '</div>',
+        '</div>'
+      ].join("");
+      return li;
+    }
+
+    function renderMenu() {
+      const frag = document.createDocumentFragment();
+
+      MENU.forEach(group => {
+        const board = document.createElement("section");
+        board.className = "menu-board";
+
+        const strip = document.createElement("div");
+        strip.className = "checker-strip";
+        strip.setAttribute("aria-hidden", "true");
+
+        const body = document.createElement("div");
+        body.className = "menu-board-body";
+
+        const title = document.createElement("h2");
+        title.className = "category-title";
+        title.textContent = group.category;
+
+        const ul = document.createElement("ul");
+        ul.className = "product-list";
+        group.items.forEach(item => ul.appendChild(productTemplate(item)));
+
+        body.append(title, ul);
+        board.append(strip, body);
+        frag.appendChild(board);
+      });
+
+      dom.menu.appendChild(frag);
+    }
+
+    /* ============================================================
+       CARRITO
+       ============================================================ */
+    function changeQuantity(id, delta) {
+      if (!PRODUCTS.has(id)) return;
+      const next = (cart.get(id) || 0) + delta;
+      if (next <= 0) cart.delete(id); else cart.set(id, next);
+      updateProductCard(id);
+      updateCartBar();
+    }
+
+    function updateProductCard(id) {
+      const card = document.querySelector('.product[data-id="' + id + '"]');
+      if (!card) return;
+      const qty = cart.get(id) || 0;
+      card.querySelector("[data-qty]").textContent = qty;
+      card.querySelector('[data-action="remove"]').disabled = qty === 0;
+      card.classList.toggle("is-active", qty > 0);
+    }
+
+    function getCartLines() {
+      return Array.from(cart.entries()).map(([id, qty]) => {
+        const p = PRODUCTS.get(id);
+        return { id, name: p.name, unitPrice: p.price, quantity: qty, subtotal: p.price * qty };
+      });
+    }
+
+    function getCartTotals() {
+      const lines = getCartLines();
+      return {
+        lines,
+        units: lines.reduce((a, l) => a + l.quantity, 0),
+        total: lines.reduce((a, l) => a + l.subtotal, 0)
+      };
+    }
+
+    function updateCartBar() {
+      const { units, total } = getCartTotals();
+      dom.cartTotal.textContent = formatPrice(total);
+      dom.cartCount.textContent = units === 0
+        ? "Carrito vacío"
+        : units + (units === 1 ? " producto" : " productos");
+      dom.btn.disabled = units === 0;
+      if (units > 0) hideError();
+    }
+
+    /* ============================================================
+       VALIDACIÓN + ENLACE DE WHATSAPP
+       ============================================================ */
+    function showError(message, field) {
+      dom.error.textContent = message;
+      dom.error.classList.add("is-visible");
+      if (field) { field.setAttribute("aria-invalid", "true"); field.focus(); }
+    }
+
+    function hideError() {
+      dom.error.classList.remove("is-visible");
+      dom.error.textContent = "";
+      dom.name.removeAttribute("aria-invalid");
+    }
+
+    function buildWhatsappText() {
+      const { lines, total } = getCartTotals();
+      const name = dom.name.value.trim();
+      const method = dom.form.elements.deliveryMethod.value === "delivery"
+        ? "Envío a domicilio (Delivery)"
+        : "Retiro en el local";
+
+      const detail = lines
+        .map(l => "• " + l.quantity + "x " + l.name + " — " + formatPrice(l.subtotal))
+        .join("\n");
+
+      return [
+        "¡Hola " + CONFIG.businessName + "! 🍔 Quiero hacer un pedido:",
+        "",
+        detail,
+        "",
+        "TOTAL: " + formatPrice(total),
+        "",
+        "Cliente: " + name,
+        "Entrega: " + method
+      ].join("\n");
+    }
+
+    function buildWhatsappLink() {
+      const number = CONFIG.whatsappNumber.replace(/\D/g, "");
+      return "https://wa.me/" + number + "?text=" + encodeURIComponent(buildWhatsappText());
+    }
+
+    function handleSubmit(event) {
+      event.preventDefault();
+      hideError();
+
+      if (getCartTotals().units === 0) {
+        showError("Tu carrito está vacío. Agregá al menos un producto para continuar.");
+        return;
+      }
+      if (dom.name.value.trim().length < 2) {
+        showError("Necesitamos tu nombre para preparar el pedido.", dom.name);
+        return;
+      }
+      if (!/^\d{6,}$/.test(CONFIG.whatsappNumber.replace(/\D/g, ""))) {
+        showError("Configurá el número de WhatsApp del local en CONFIG.whatsappNumber.");
+        return;
+      }
+
+      window.open(buildWhatsappLink(), "_blank", "noopener");
+    }
+
+    /* ============================================================
+       EVENTOS
+       ============================================================ */
+    function handleStepperClick(event) {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const card = button.closest(".product");
+      if (!card) return;
+      changeQuantity(card.dataset.id, button.dataset.action === "add" ? 1 : -1);
+    }
+
+    function init() {
+      renderNotices();
+      renderMenu();
+      updateCartBar();
+
+      dom.menu.addEventListener("click", handleStepperClick);
+      dom.form.addEventListener("submit", handleSubmit);
+      dom.name.addEventListener("input", hideError);
+      dom.year.textContent = new Date().getFullYear();
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>

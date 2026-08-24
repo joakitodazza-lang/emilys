@@ -1,0 +1,9 @@
+# Versión adaptada para el hosting de artifacts de Claude (no desplegar en Vercel)
+landing-artifact.html
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+.vercel
