@@ -47,7 +47,7 @@
        2. RESET Y BASE (mobile-first)
        ============================================================ */
     *, *::before, *::after { box-sizing: border-box; }
-    html { -webkit-text-size-adjust: 100%; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 
     body {
       margin: 0;
@@ -287,10 +287,52 @@
     .notice b { color: #ffe08a; }
 
     /* ============================================================
+       4b. BARRA DE CATEGORÍAS (sticky, mobile-first)
+       ============================================================ */
+    .cat-nav {
+      position: sticky;
+      top: 0;
+      z-index: 25;
+      margin-top: 20px;
+      background: var(--board);
+      border-block: 3px solid var(--ink);
+      box-shadow: 0 6px 14px rgba(8, 20, 60, .2);
+    }
+    .cat-nav-inner {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-block: 10px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .cat-nav-inner::-webkit-scrollbar { display: none; }
+
+    .cat-link {
+      flex: 0 0 auto;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--ink);
+      font: inherit;
+      font-weight: 800;
+      font-size: .82rem;
+      padding: 7px 15px;
+      white-space: nowrap;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .12s ease, color .12s ease;
+    }
+    .cat-link:hover { background: #eaf0fb; }
+    .cat-link.is-active { background: var(--red); color: var(--white); border-color: var(--ink); }
+    .cat-link:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+    /* ============================================================
        5. TABLEROS DE MENÚ + TARJETAS
        ============================================================ */
     .menu-board {
       margin-top: 24px;
+      scroll-margin-top: 72px;   /* deja ver el título bajo la barra sticky */
       background: var(--board);
       border: 4px solid var(--ink);
       border-radius: var(--radius);
@@ -625,6 +667,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
+      html { scroll-behavior: auto; }
       .marquee-track { padding-left: 0; }
     }
 
@@ -652,7 +695,7 @@
 
     <div class="wrap">
       <h1 class="brand-wordmark">
-        <img src="wordmark.png" alt="Emily's" width="1846" height="520" />
+        <img src="wordmark.png" alt="Emily's" width="1846" height="571" />
       </h1>
       <p class="brand-tagline">FAST FOOD DE BARRIO</p>
       <p class="schedule">
@@ -679,6 +722,11 @@
       </div>
     </section>
   </div>
+
+  <!-- ===================== BARRA DE CATEGORÍAS (sticky) ===================== -->
+  <nav class="cat-nav" aria-label="Categorías del menú">
+    <div class="wrap cat-nav-inner" id="cat-nav"></div>
+  </nav>
 
   <!-- ===================== MENÚ ===================== -->
   <main class="wrap" id="menu"></main>
@@ -759,9 +807,9 @@
 
       /* Avisos del día: se muestran en la cinta y en la lista */
       notices: [
-        { icon: "🍟", label: "¡Ojo!",             text: "Todas las hamburguesas incluyen papas fritas." },
+        { icon: "🍟", label: "",                   text: "Todas las hamburguesas incluyen papas fritas." },
         { icon: "🛵", label: "Delivery",           text: "Wilde, Monte Chingolo, Bernal y Dominico." },
-        { icon: "⏱️", label: "Demora estimada",    text: "Delivery 40-55 min · Retiro 20 min." }
+        { icon: "⏱️", label: "Demora estimada",    text: "Retiro 15 min · Delivery 30-40 min." }
       ]
     };
 
@@ -772,29 +820,29 @@
     const MENU = [
       {
         category: "Hamburguesas",
-        note: "Todas incluyen papas fritas 🍟 · S: Sencilla · D: Doble · T: Triple",
+        note: "Todas incluyen papas fritas 🍟 · S: Simple · D: Doble · T: Triple",
         items: [
           { id: "cheese",  name: "Cheese Burger", emoji: "🍔", badge: null,
             description: "Pan de papa, medallón de 100 g con cheddar.",
-            variants: [ { label: "Sencilla", price: 13000 }, { label: "Doble", price: 15500 }, { label: "Triple", price: 18000 } ] },
+            variants: [ { label: "Simple", price: 13000 }, { label: "Doble", price: 15500 }, { label: "Triple", price: 18000 } ] },
           { id: "bacon",   name: "Cheese Bacon", emoji: "🥓", badge: null,
             description: "Pan de papa, medallón de 100 g con cheddar y panceta.",
-            variants: [ { label: "Sencilla", price: 13500 }, { label: "Doble", price: 16000 }, { label: "Triple", price: 18500 } ] },
+            variants: [ { label: "Simple", price: 13500 }, { label: "Doble", price: 16000 }, { label: "Triple", price: 18500 } ] },
           { id: "emilys",  name: "Emily's", emoji: "🍔", badge: "La de la casa",
             description: "Pan de papa, medallón de 100 g con cheddar, lechuga, panceta, pepinos agridulces y aderezo.",
-            variants: [ { label: "Sencilla", price: 14000 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19000 } ] },
+            variants: [ { label: "Simple", price: 14000 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19000 } ] },
           { id: "crispy",  name: "Crispy", emoji: "🧅", badge: null,
             description: "Pan de papa, medallón de 100 g con cheddar, cebolla frita, panceta y salsa barbacoa.",
-            variants: [ { label: "Sencilla", price: 14000 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19000 } ] },
+            variants: [ { label: "Simple", price: 14000 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19000 } ] },
           { id: "cuarto",  name: "Cuarto", emoji: "🍔", badge: null,
             description: "Pan de papa, medallón de 100 g con cheddar, cebollita, ketchup y mostaza.",
-            variants: [ { label: "Sencilla", price: 13500 }, { label: "Doble", price: 16000 }, { label: "Triple", price: 18500 } ] },
+            variants: [ { label: "Simple", price: 13500 }, { label: "Doble", price: 16000 }, { label: "Triple", price: 18500 } ] },
           { id: "clasica", name: "Clásica", emoji: "🍔", badge: null,
             description: "Pan de papa, medallón de 100 g con cheddar, lechuga, tomate, panceta y mayonesa.",
-            variants: [ { label: "Sencilla", price: 14000 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19000 } ] },
+            variants: [ { label: "Simple", price: 14000 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19000 } ] },
           { id: "legacy",  name: "Legacy", emoji: "🍔", badge: null,
             description: "Pan de papa, medallón de 100 g con cheddar, panceta, lechuga, cebolla y salsa tasty.",
-            variants: [ { label: "Sencilla", price: 14500 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19500 } ] },
+            variants: [ { label: "Simple", price: 14500 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19500 } ] },
           { id: "chicken", name: "Chicken-Li", emoji: "🍗", badge: null,
             description: "Pan de papa, medallón de pollo Sadia con cheddar, lechuga, tomate, cebolla, panceta y salsa tasty.",
             variants: [ { label: null, price: 15000 } ] }
@@ -847,6 +895,10 @@
     const formatPrice = v => money.format(v);
     const $ = s => document.querySelector(s);
 
+    /* Convierte "Las Clásicas" -> "las-clasicas" (para anclas/ids) */
+    const slug = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
     const dom = {
       menu:       $("#menu"),
       marquee:    $("#marquee-track"),
@@ -864,13 +916,15 @@
        AVISOS (cinta + lista)
        ============================================================ */
     function renderNotices() {
+      const lbl = n => n.label ? '<b>' + n.label + ':</b> ' : '';
+
       dom.noticeList.innerHTML = CONFIG.notices.map(n =>
         '<li class="notice"><span class="notice-icon" aria-hidden="true">' + n.icon + '</span>' +
-        '<span><b>' + n.label + ':</b> ' + n.text + '</span></li>'
+        '<span>' + lbl(n) + n.text + '</span></li>'
       ).join("");
 
       const piece = CONFIG.notices.map(n =>
-        '<span>' + n.icon + ' <b>' + n.label + ':</b> ' + n.text + '</span>'
+        '<span>' + n.icon + ' ' + lbl(n) + n.text + '</span>'
       ).join('<span aria-hidden="true">•</span>');
       dom.marquee.innerHTML = piece + '<span aria-hidden="true">•</span>' + piece;
     }
@@ -927,6 +981,7 @@
       MENU.forEach(group => {
         const board = document.createElement("section");
         board.className = "menu-board";
+        board.id = slug(group.category);
 
         const strip = document.createElement("div");
         strip.className = "checker-strip";
@@ -956,6 +1011,35 @@
       });
 
       dom.menu.appendChild(frag);
+    }
+
+    /* ============================================================
+       BARRA DE CATEGORÍAS + SCROLL-SPY
+       ============================================================ */
+    function renderCategoryNav() {
+      const nav = document.getElementById("cat-nav");
+      nav.innerHTML = MENU.map(g =>
+        '<a class="cat-link" href="#' + slug(g.category) + '">' + g.category + '</a>'
+      ).join("");
+    }
+
+    function initScrollSpy() {
+      const links = new Map();
+      document.querySelectorAll(".cat-link").forEach(a =>
+        links.set(a.getAttribute("href").slice(1), a)
+      );
+      if (links.size === 0 || !("IntersectionObserver" in window)) return;
+
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (!e.isIntersecting) return;
+          links.forEach(a => a.classList.remove("is-active"));
+          const active = links.get(e.target.id);
+          if (active) active.classList.add("is-active");
+        });
+      }, { rootMargin: "-45% 0px -50% 0px", threshold: 0 });
+
+      document.querySelectorAll(".menu-board").forEach(b => obs.observe(b));
     }
 
     /* ============================================================
@@ -1113,6 +1197,8 @@
     function init() {
       renderNotices();
       renderMenu();
+      renderCategoryNav();
+      initScrollSpy();
       updateCartBar();
 
       dom.menu.addEventListener("click", handleMenuClick);
