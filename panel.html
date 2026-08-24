@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Panel de comandas — Emily's</title>
+
+  <style>
+    :root {
+      --blue: #1a46c8;
+      --red:  #e0231a;
+      --ink:  #16181d;
+      --bg:   #eef1f8;
+      --card: #ffffff;
+      --muted:#5f6570;
+      --tw: 80mm;                 /* ancho de la comandera */
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: "Consolas", "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+    header.top { text-align: center; margin-bottom: 18px; }
+    header.top h1 { margin: 0; font-size: 1.4rem; }
+    header.top h1 b { color: var(--red); }
+    header.top p { margin: 4px 0 0; color: var(--muted); font-size: .9rem; }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid #d7dcea;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 6px 20px rgba(20,30,70,.08);
+    }
+
+    label.lbl { display: block; font-weight: 700; font-size: .85rem; margin-bottom: 6px; }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      font-family: var(--mono);
+      font-size: .95rem;
+      padding: 12px;
+      border: 2px solid #cdd3e3;
+      border-radius: 10px;
+    }
+    textarea:focus-visible { outline: 3px solid var(--blue); }
+
+    .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 12px; }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      background: var(--blue);
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: #e7ebf6; color: var(--ink); }
+    .btn.red { background: var(--red); }
+
+    .seg { display: inline-flex; border: 2px solid var(--ink); border-radius: 999px; overflow: hidden; }
+    .seg button { border: 0; background: #fff; padding: 8px 16px; font: inherit; font-weight: 700; cursor: pointer; }
+    .seg button.on { background: var(--ink); color: #fff; }
+
+    .hint { color: var(--muted); font-size: .85rem; }
+    .error { color: var(--red); font-weight: 700; margin-top: 10px; display: none; }
+    .error.show { display: block; }
+
+    /* Previews */
+    .previews { display: grid; gap: 20px; margin-top: 22px; }
+    @media (min-width: 760px) { .previews { grid-template-columns: 1fr 1fr; } }
+
+    .preview-card { background: transparent; }
+    .preview-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .preview-head h3 { margin: 0; font-size: 1rem; }
+
+    /* Ticket (lo que se imprime) */
+    .ticket {
+      width: var(--tw);
+      max-width: 100%;
+      background: #fff;
+      color: #000;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.35;
+      padding: 4mm 3mm;
+      border: 1px solid #cdd3e3;
+      border-radius: 6px;
+      margin: 0 auto;
+    }
+    .ticket .t-center { text-align: center; }
+    .ticket h2 { margin: 0; font-size: 20px; letter-spacing: 1px; }
+    .ticket .t-sub { font-size: 12px; }
+    .ticket .t-div { border-top: 1px dashed #000; margin: 2.5mm 0; }
+    .ticket .t-tag {
+      display: inline-block;
+      border: 2px solid #000;
+      border-radius: 4px;
+      padding: 2px 10px;
+      font-weight: 800;
+      font-size: 16px;
+      margin: 1mm 0;
+    }
+    .ticket .t-item { display: flex; gap: 8px; margin: 1.5mm 0; align-items: baseline; }
+    .ticket .t-qty { font-weight: 800; min-width: 34px; }
+    .ticket .t-name { flex: 1; }
+    .ticket.kitchen .t-item { font-size: 17px; }
+    .ticket .t-line { display: flex; justify-content: space-between; gap: 10px; margin: 1mm 0; }
+    .ticket .t-label { font-weight: 700; }
+    .ticket .t-total { font-size: 20px; font-weight: 800; }
+    .ticket .t-note { font-size: 12px; margin: 2mm 0 0; }
+
+    .empty { color: var(--muted); font-style: italic; padding: 20px; text-align: center; }
+
+    /* ============ IMPRESIÓN ============ */
+    @media print {
+      body * { visibility: hidden; }
+      .ticket.printing, .ticket.printing * { visibility: visible; }
+      .ticket.printing {
+        position: absolute;
+        left: 0; top: 0;
+        width: var(--tw);
+        border: 0;
+        border-radius: 0;
+        margin: 0;
+        padding: 3mm 3mm 8mm;
+      }
+    }
+  </style>
+  <style id="pagesize">@page { size: 80mm auto; margin: 0; }</style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1><b>Emily's</b> · Panel de comandas</h1>
+      <p>Pegá el pedido que te llegó por WhatsApp y generá la comanda de cocina y la etiqueta del sobre.</p>
+    </header>
+
+    <section class="panel no-print">
+      <label class="lbl" for="order-input">Pedido (copiado de WhatsApp)</label>
+      <textarea id="order-input" placeholder="Pegá acá el mensaje completo del pedido…"></textarea>
+
+      <div class="row">
+        <button class="btn" id="btn-generar">Generar comandas</button>
+        <button class="btn ghost" id="btn-limpiar">Limpiar</button>
+        <span class="hint">Ancho de la comandera:</span>
+        <span class="seg" role="group" aria-label="Ancho de papel">
+          <button data-w="80mm" class="on">80&nbsp;mm</button>
+          <button data-w="58mm">58&nbsp;mm</button>
+        </span>
+      </div>
+      <p class="error" id="error">No pude leer el pedido. Pegá el mensaje completo tal cual te llegó por WhatsApp.</p>
+    </section>
+
+    <div class="previews">
+      <div class="preview-card">
+        <div class="preview-head">
+          <h3>🍳 Comanda cocina</h3>
+          <button class="btn red no-print" data-print="kitchen">🖨️ Imprimir</button>
+        </div>
+        <div class="ticket kitchen" id="ticket-kitchen">
+          <p class="empty">Generá un pedido para ver la comanda.</p>
+        </div>
+      </div>
+
+      <div class="preview-card">
+        <div class="preview-head">
+          <h3>🏷️ Etiqueta sobre</h3>
+          <button class="btn red no-print" data-print="bag">🖨️ Imprimir</button>
+        </div>
+        <div class="ticket bag" id="ticket-bag">
+          <p class="empty">Generá un pedido para ver la etiqueta.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const $ = s => document.querySelector(s);
+    const dom = {
+      input:   $("#order-input"),
+      generar: $("#btn-generar"),
+      limpiar: $("#btn-limpiar"),
+      error:   $("#error"),
+      kitchen: $("#ticket-kitchen"),
+      bag:     $("#ticket-bag"),
+      pagesize:$("#pagesize")
+    };
+
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+    /* ---- Parseo del mensaje de WhatsApp ---- */
+    function parseOrder(text) {
+      const lines = text.split(/\r?\n/).map(l => l.trim());
+      const order = { items: [], total: "", cliente: "", entrega: "", pago: "" };
+
+      lines.forEach(l => {
+        let m = l.match(/^[•\-\*]?\s*(\d+)\s*x\s*(.+?)\s*—\s*(.+)$/);
+        if (m) { order.items.push({ qty: parseInt(m[1], 10), name: m[2].trim(), price: m[3].trim() }); return; }
+        if (/^TOTAL:/i.test(l))    { order.total   = l.replace(/^TOTAL:\s*/i, "").trim(); return; }
+        if (/^Cliente:/i.test(l))  { order.cliente = l.replace(/^Cliente:\s*/i, "").trim(); return; }
+        if (/^Entrega:/i.test(l))  { order.entrega = l.replace(/^Entrega:\s*/i, "").trim(); return; }
+        if (/^Pago:/i.test(l))     { order.pago    = l.replace(/^Pago:\s*/i, "").trim(); return; }
+      });
+      return order;
+    }
+
+    /* ---- Número de pedido (secuencia diaria en el navegador) ---- */
+    function nextOrderNo() {
+      const today = new Date().toISOString().slice(0, 10);
+      let data = {};
+      try { data = JSON.parse(localStorage.getItem("emilys-comanda") || "{}"); } catch (e) {}
+      if (data.date !== today) data = { date: today, n: 0 };
+      data.n += 1;
+      try { localStorage.setItem("emilys-comanda", JSON.stringify(data)); } catch (e) {}
+      return data.n;
+    }
+
+    function nowStr() {
+      return new Date().toLocaleString("es-AR", {
+        day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    function isDelivery(entrega) { return /delivery|domicilio/i.test(entrega); }
+
+    /* ---- Render de las dos impresiones ---- */
+    function render(order) {
+      const no = nextOrderNo();
+      const when = nowStr();
+      const entregaTag = isDelivery(order.entrega) ? "DELIVERY" : "RETIRO";
+
+      const itemsBig = order.items.map(i =>
+        '<div class="t-item"><span class="t-qty">' + i.qty + 'x</span>' +
+        '<span class="t-name">' + esc(i.name) + '</span></div>'
+      ).join("") || '<div class="t-item">(sin items)</div>';
+
+      const itemsSmall = order.items.map(i =>
+        '<div class="t-item"><span class="t-qty">' + i.qty + 'x</span>' +
+        '<span class="t-name">' + esc(i.name) + '</span></div>'
+      ).join("");
+
+      /* COMANDA COCINA */
+      dom.kitchen.innerHTML =
+        '<div class="t-center"><h2>COCINA</h2>' +
+        '<div class="t-sub">Pedido #' + no + ' · ' + when + '</div>' +
+        '<div class="t-tag">' + entregaTag + '</div></div>' +
+        '<div class="t-div"></div>' +
+        itemsBig +
+        '<div class="t-div"></div>' +
+        '<div class="t-sub">Cliente: ' + esc(order.cliente || "-") + '</div>';
+
+      /* ETIQUETA SOBRE */
+      dom.bag.innerHTML =
+        '<div class="t-center"><h2>EMILY\'S</h2>' +
+        '<div class="t-sub">Pedido #' + no + ' · ' + when + '</div></div>' +
+        '<div class="t-div"></div>' +
+        '<div class="t-line"><span class="t-label">Cliente</span><span>' + esc(order.cliente || "-") + '</span></div>' +
+        '<div class="t-line"><span class="t-label">Entrega</span><span>' + esc(order.entrega || "-") + '</span></div>' +
+        '<div class="t-line"><span class="t-label">Pago</span><span>' + esc(order.pago || "-") + '</span></div>' +
+        '<div class="t-div"></div>' +
+        itemsSmall +
+        '<div class="t-div"></div>' +
+        '<div class="t-line"><span class="t-label t-total">TOTAL</span><span class="t-total">' + esc(order.total || "-") + '</span></div>';
+    }
+
+    /* ---- Impresión de un ticket puntual ---- */
+    function printTicket(which) {
+      const el = which === "kitchen" ? dom.kitchen : dom.bag;
+      if (el.querySelector(".empty")) return;
+      el.classList.add("printing");
+      window.print();
+      setTimeout(() => el.classList.remove("printing"), 300);
+    }
+
+    /* ---- Eventos ---- */
+    dom.generar.addEventListener("click", () => {
+      const order = parseOrder(dom.input.value);
+      if (order.items.length === 0 && !order.cliente) {
+        dom.error.classList.add("show");
+        return;
+      }
+      dom.error.classList.remove("show");
+      render(order);
+    });
+
+    dom.limpiar.addEventListener("click", () => {
+      dom.input.value = "";
+      dom.error.classList.remove("show");
+      dom.kitchen.innerHTML = '<p class="empty">Generá un pedido para ver la comanda.</p>';
+      dom.bag.innerHTML = '<p class="empty">Generá un pedido para ver la etiqueta.</p>';
+      dom.input.focus();
+    });
+
+    document.querySelectorAll("[data-print]").forEach(b =>
+      b.addEventListener("click", () => printTicket(b.dataset.print))
+    );
+
+    /* Selector de ancho de papel */
+    document.querySelectorAll(".seg button").forEach(b =>
+      b.addEventListener("click", () => {
+        document.querySelectorAll(".seg button").forEach(x => x.classList.remove("on"));
+        b.classList.add("on");
+        const w = b.dataset.w;
+        document.documentElement.style.setProperty("--tw", w);
+        dom.pagesize.textContent = "@page { size: " + w + " auto; margin: 0; }";
+      })
+    );
+  </script>
+</body>
+</html>
