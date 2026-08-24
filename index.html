@@ -516,6 +516,36 @@
     .option-text { font-size: .92rem; }
     .option-hint { display: block; font-size: .78rem; font-weight: 400; color: var(--ink-soft); }
 
+    /* Campos condicionales de forma de pago */
+    .pay-extra { display: grid; gap: 10px; margin-top: 4px; }
+    .pay-extra[hidden] { display: none; }
+
+    .cash-note { margin: 0; font-size: .86rem; font-weight: 700; }
+    .cash-note.ok { color: #1f7a3d; }
+    .cash-note.warn { color: var(--red-deep); }
+
+    .transfer-box {
+      background: var(--white);
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: .88rem;
+    }
+    .transfer-box .t-title { margin: 0 0 8px; font-weight: 800; }
+    .transfer-box .t-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 3px 0;
+    }
+    .transfer-box .t-label { color: var(--ink-soft); font-weight: 700; }
+    .transfer-box .t-val {
+      font-weight: 800;
+      text-align: right;
+      word-break: break-all;
+      font-variant-numeric: tabular-nums;
+    }
+
     .form-error {
       display: none;
       margin: 0;
@@ -699,6 +729,42 @@
           </div>
         </fieldset>
 
+        <fieldset>
+          <legend class="fieldset-legend">Forma de pago</legend>
+          <div class="options">
+            <label class="option">
+              <input type="radio" name="payment" value="efectivo" checked />
+              <span class="option-text">Efectivo</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="payment" value="transferencia" />
+              <span class="option-text">Transferencia</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="payment" value="debito" />
+              <span class="option-text">Débito</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="payment" value="credito" />
+              <span class="option-text">Crédito</span>
+            </label>
+          </div>
+
+          <!-- Efectivo: con cuánto paga (para el vuelto) -->
+          <div class="pay-extra" id="pay-efectivo">
+            <div class="field">
+              <label for="cash-amount">¿Con cuánto abonás? (para calcular el vuelto)</label>
+              <input type="text" inputmode="numeric" id="cash-amount" placeholder="Ej: 20000" autocomplete="off" />
+            </div>
+            <p class="cash-note" id="cash-note" aria-live="polite"></p>
+          </div>
+
+          <!-- Transferencia: datos de la cuenta -->
+          <div class="pay-extra" id="pay-transferencia" hidden>
+            <div class="transfer-box" id="transfer-box"></div>
+          </div>
+        </fieldset>
+
         <p class="form-error" id="form-error" role="alert"></p>
       </form>
     </section>
@@ -741,6 +807,17 @@
       whatsappNumber: "5491155957052",
       currency: "ARS",
       locale: "es-AR",
+
+      /* Datos para transferencias (COMPLETAR con los reales del local).
+         Los que dejes vacíos ("") no se muestran. */
+      payment: {
+        transfer: {
+          alias:   "COMPLETAR.ALIAS",
+          cbu:     "",
+          titular: "Emily's",
+          banco:   ""
+        }
+      },
 
       /* Avisos del día: se muestran en la cinta y en la lista */
       notices: [
@@ -846,7 +923,19 @@
       form:       $("#order-form"),
       name:       $("#customer-name"),
       error:      $("#form-error"),
-      year:       $("#year")
+      year:       $("#year"),
+      cash:        $("#cash-amount"),
+      cashNote:    $("#cash-note"),
+      transferBox: $("#transfer-box"),
+      payEfectivo: $("#pay-efectivo"),
+      payTransfer: $("#pay-transferencia")
+    };
+
+    const PAY_LABELS = {
+      efectivo: "Efectivo",
+      transferencia: "Transferencia",
+      debito: "Débito",
+      credito: "Crédito"
     };
 
     /* ============================================================
@@ -1043,6 +1132,66 @@
         : units + (units === 1 ? " producto" : " productos");
       dom.btn.disabled = units === 0;
       if (units > 0) hideError();
+      updateCash();
+    }
+
+    /* ============================================================
+       FORMA DE PAGO (efectivo/vuelto, transferencia, tarjetas)
+       ============================================================ */
+    function currentPayment() {
+      return dom.form.elements.payment.value;
+    }
+
+    /* Monto en efectivo ingresado (solo dígitos) */
+    function cashValue() {
+      const digits = (dom.cash.value.match(/\d/g) || []).join("");
+      return digits ? parseInt(digits, 10) : NaN;
+    }
+
+    function renderTransferBox() {
+      const t = CONFIG.payment.transfer;
+      const rows = [];
+      if (t.alias)   rows.push(["Alias", t.alias]);
+      if (t.cbu)     rows.push(["CBU/CVU", t.cbu]);
+      if (t.titular) rows.push(["Titular", t.titular]);
+      if (t.banco)   rows.push(["Banco", t.banco]);
+
+      dom.transferBox.innerHTML =
+        '<p class="t-title">Transferí a esta cuenta 👇</p>' +
+        rows.map(r =>
+          '<div class="t-row"><span class="t-label">' + r[0] + '</span>' +
+          '<span class="t-val">' + r[1] + '</span></div>'
+        ).join("");
+    }
+
+    /* Muestra/oculta los campos según la forma de pago elegida */
+    function togglePayExtras() {
+      const pay = currentPayment();
+      dom.payEfectivo.hidden = pay !== "efectivo";
+      dom.payTransfer.hidden = pay !== "transferencia";
+      updateCash();
+    }
+
+    /* Calcula y muestra el vuelto en vivo */
+    function updateCash() {
+      if (currentPayment() !== "efectivo") {
+        dom.cashNote.textContent = "";
+        dom.cashNote.className = "cash-note";
+        return;
+      }
+      const amount = cashValue();
+      const total = getCartTotals().total;
+
+      if (isNaN(amount) || amount === 0 || total === 0) {
+        dom.cashNote.textContent = "";
+        dom.cashNote.className = "cash-note";
+      } else if (amount < total) {
+        dom.cashNote.textContent = "El monto no alcanza para el total (" + formatPrice(total) + ").";
+        dom.cashNote.className = "cash-note warn";
+      } else {
+        dom.cashNote.textContent = "Tu vuelto: " + formatPrice(amount - total);
+        dom.cashNote.className = "cash-note ok";
+      }
     }
 
     /* ============================================================
@@ -1071,7 +1220,7 @@
         .map(l => "• " + l.quantity + "x " + l.name + " — " + formatPrice(l.subtotal))
         .join("\n");
 
-      return [
+      const msg = [
         "¡Hola " + CONFIG.businessName + "! 🍔 Quiero hacer un pedido:",
         "",
         detail,
@@ -1080,7 +1229,29 @@
         "",
         "Cliente: " + name,
         "Entrega: " + method
-      ].join("\n");
+      ];
+
+      const pay = currentPayment();
+      if (pay === "efectivo") {
+        const amount = cashValue();
+        if (!isNaN(amount) && amount >= total && total > 0) {
+          msg.push("Pago: Efectivo — abona con " + formatPrice(amount) + " (vuelto " + formatPrice(amount - total) + ")");
+        } else {
+          msg.push("Pago: Efectivo");
+        }
+      } else if (pay === "transferencia") {
+        const t = CONFIG.payment.transfer;
+        msg.push("Pago: Transferencia");
+        msg.push("Datos para transferir:");
+        if (t.alias)   msg.push("• Alias: " + t.alias);
+        if (t.cbu)     msg.push("• CBU/CVU: " + t.cbu);
+        if (t.titular) msg.push("• Titular: " + t.titular);
+        if (t.banco)   msg.push("• Banco: " + t.banco);
+      } else {
+        msg.push("Pago: " + PAY_LABELS[pay]);
+      }
+
+      return msg.join("\n");
     }
 
     function buildWhatsappLink() {
@@ -1138,11 +1309,17 @@
       renderMenu();
       renderCategoryNav();
       initScrollSpy();
+      renderTransferBox();
+      togglePayExtras();
       updateCartBar();
 
       dom.menu.addEventListener("click", handleMenuClick);
       dom.form.addEventListener("submit", handleSubmit);
       dom.name.addEventListener("input", hideError);
+      dom.form.addEventListener("change", e => {
+        if (e.target.name === "payment") togglePayExtras();
+      });
+      dom.cash.addEventListener("input", updateCash);
       dom.year.textContent = new Date().getFullYear();
     }
 
