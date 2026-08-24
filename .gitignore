@@ -7,3 +7,8 @@ Thumbs.db
 *.log
 node_modules/
 .vercel
+
+# Archivos fuente del logo (se usa solo logo.jpg)
+EMILYSjpg.jpg
+EMILYSjpg - Editado.jpg
+EMILYSpsd.psd.png
