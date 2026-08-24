@@ -912,6 +912,9 @@
       currency: "ARS",
       locale: "es-AR",
 
+      /* Costo de envío en delivery (el mismo valor está en zonas.json para el mapa). */
+      envio: { costo: 1000 },
+
       /* Datos para transferencias (COMPLETAR con los reales del local).
          Los que dejes vacíos ("") no se muestran. */
       payment: {
@@ -1234,12 +1237,21 @@
       };
     }
 
+    /* Costo de envío (solo en delivery) y total final con envío incluido */
+    function shippingCost() {
+      return isDelivery() ? ((CONFIG.envio && CONFIG.envio.costo) || 0) : 0;
+    }
+    function grandTotal() {
+      return getCartTotals().total + shippingCost();
+    }
+
     function updateCartBar() {
-      const { units, total } = getCartTotals();
-      dom.cartTotal.textContent = formatPrice(total);
+      const { units } = getCartTotals();
+      const ship = shippingCost();
+      dom.cartTotal.textContent = formatPrice(grandTotal());
       dom.cartCount.textContent = units === 0
         ? "Carrito vacío"
-        : units + (units === 1 ? " producto" : " productos");
+        : units + (units === 1 ? " producto" : " productos") + (ship ? " + envío " + formatPrice(ship) : "");
       dom.btn.disabled = units === 0;
       if (units > 0) hideError();
       updateCash();
@@ -1302,7 +1314,7 @@
         return;
       }
       const amount = cashValue();
-      const total = getCartTotals().total;
+      const total = grandTotal();
 
       if (isNaN(amount) || amount === 0 || total === 0) {
         dom.cashNote.textContent = "";
@@ -1334,6 +1346,8 @@
     function buildWhatsappText() {
       const { lines, total } = getCartTotals();
       const name = dom.name.value.trim();
+      const ship = shippingCost();
+      const grand = total + ship;
 
       const detail = lines
         .map(l => "• " + l.quantity + "x " + l.name + " — " + formatPrice(l.subtotal))
@@ -1343,8 +1357,6 @@
         "¡Hola " + CONFIG.businessName + "! 🍔 Quiero hacer un pedido:",
         "",
         detail,
-        "",
-        "TOTAL: " + formatPrice(total),
         "",
         "Cliente: " + name
       ];
@@ -1358,11 +1370,18 @@
         msg.push("Entrega: Retiro en el local");
       }
 
+      msg.push("");
+      if (ship) {
+        msg.push("Subtotal: " + formatPrice(total));
+        msg.push("Envío: " + formatPrice(ship));
+      }
+      msg.push("TOTAL: " + formatPrice(grand));
+
       const pay = currentPayment();
       if (pay === "efectivo") {
         const amount = cashValue();
-        if (!isNaN(amount) && amount >= total && total > 0) {
-          msg.push("Pago: Efectivo — abona con " + formatPrice(amount) + " (vuelto " + formatPrice(amount - total) + ")");
+        if (!isNaN(amount) && amount >= grand && grand > 0) {
+          msg.push("Pago: Efectivo — abona con " + formatPrice(amount) + " (vuelto " + formatPrice(amount - grand) + ")");
         } else {
           msg.push("Pago: Efectivo");
         }
@@ -1453,7 +1472,7 @@
       dom.name.addEventListener("input", hideError);
       dom.form.addEventListener("change", e => {
         if (e.target.name === "payment") togglePayExtras();
-        if (e.target.name === "deliveryMethod") toggleDeliveryFields();
+        if (e.target.name === "deliveryMethod") { toggleDeliveryFields(); updateCartBar(); }
       });
       dom.cash.addEventListener("input", updateCash);
       dom.year.textContent = new Date().getFullYear();

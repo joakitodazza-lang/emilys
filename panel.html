@@ -216,7 +216,7 @@
       const lines = text.split(/\r?\n/).map(l => l.trim());
       const order = {
         items: [], total: "", cliente: "", entrega: "", pago: "",
-        direccion: "", entrecalles: "", localidad: "", vuelto: ""
+        direccion: "", entrecalles: "", localidad: "", vuelto: "", envio: ""
       };
 
       lines.forEach(l => {
@@ -228,6 +228,7 @@
         if (/^Direcci[oó]n:/i.test(l))  { order.direccion   = l.replace(/^Direcci[oó]n:\s*/i, "").trim(); return; }
         if (/^Entre calles:/i.test(l))  { order.entrecalles = l.replace(/^Entre calles:\s*/i, "").trim(); return; }
         if (/^Localidad:/i.test(l))     { order.localidad   = l.replace(/^Localidad:\s*/i, "").trim(); return; }
+        if (/^Env[ií]o:/i.test(l))      { order.envio       = l.replace(/^Env[ií]o:\s*/i, "").trim(); return; }
         if (/^Pago:/i.test(l))          { order.pago        = l.replace(/^Pago:\s*/i, "").trim(); return; }
       });
 
@@ -305,6 +306,7 @@
       bag.push('<div class="t-div"></div>');
       bag.push(itemsSmall);
       bag.push('<div class="t-div"></div>');
+      if (order.envio) bag.push('<div class="t-line"><span class="t-label">Envío</span><span>' + esc(order.envio) + '</span></div>');
       bag.push('<div class="t-line"><span class="t-label t-total">TOTAL</span><span class="t-total">' + esc(order.total || "-") + '</span></div>');
 
       dom.bag.innerHTML = bag.join("");
