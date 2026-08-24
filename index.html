@@ -12,6 +12,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Pacifico&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
+  <!-- Mapa de zonas de entrega (Leaflet + OpenStreetMap, gratis) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="mapa.js" defer></script>
+
   <style>
     /* ============================================================
        1. TOKENS DE DISEÑO — Diner azul + cuadros rojos (estilo Smashy's)
@@ -566,6 +571,63 @@
     .form-error.is-visible { display: block; }
 
     /* ============================================================
+       6b. MAPA DE ZONAS DE ENTREGA
+       ============================================================ */
+    .zone-check { margin-top: 24px; }
+
+    .zone-card {
+      background: var(--board);
+      border: 4px solid var(--ink);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .zone-card-body { padding: 16px; }
+
+    #map {
+      height: 300px;
+      width: 100%;
+      border: 3px solid var(--ink);
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      background: #dfe6ee;
+      z-index: 0;
+    }
+
+    .zone-form { display: flex; gap: 8px; }
+    .zone-form input {
+      flex: 1;
+      min-width: 0;
+      padding: 12px 14px;
+      font: inherit;
+      color: var(--ink);
+      background: var(--white);
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-sm);
+    }
+    .zone-form input:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+    .zone-form button {
+      flex: 0 0 auto;
+      border: 3px solid var(--ink);
+      border-radius: 999px;
+      background: var(--blue);
+      color: var(--white);
+      font: inherit;
+      font-weight: 800;
+      padding: 0 18px;
+      cursor: pointer;
+    }
+    .zone-form button:hover { background: var(--blue-deep); }
+
+    .zone-result { margin: 12px 0 0; font-weight: 700; font-size: .9rem; min-height: 1.2em; }
+    .zone-result.ok { color: #1f7a3d; }
+    .zone-result.no { color: var(--red-deep); }
+
+    .zone-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; font-size: .8rem; font-weight: 600; color: var(--ink-soft); }
+    .zone-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .zone-legend i { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--ink); display: inline-block; }
+
+    /* ============================================================
        7. BARRA FLOTANTE (total + WhatsApp)
        ============================================================ */
     .cart-bar {
@@ -703,6 +765,26 @@
 
   <!-- ===================== MENÚ ===================== -->
   <main class="wrap" id="menu"><!-- MENU:START --><!-- MENU:END --></main>
+
+  <!-- ===================== MAPA DE ZONAS =====================
+       Las zonas y el costo/tiempo de envío se editan en zonas.json.
+       ============================================================ -->
+  <div class="wrap">
+    <section class="zone-check" aria-labelledby="zone-title">
+      <span class="category-title" id="zone-title">¿Llegamos a tu zona?</span>
+      <div class="zone-card">
+        <div class="zone-card-body">
+          <div id="map" role="img" aria-label="Mapa de las zonas de entrega de Emily's"></div>
+          <form class="zone-form" id="zone-form">
+            <input type="text" id="zone-input" placeholder="Escribí tu calle y altura (ej: San Martín 1200)" autocomplete="off" />
+            <button type="submit">Verificar</button>
+          </form>
+          <p class="zone-result" id="zone-result" role="status"></p>
+          <div class="zone-legend" id="zone-legend"></div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <!-- ===================== DATOS DEL CLIENTE ===================== -->
   <div class="wrap">
