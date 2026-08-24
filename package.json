@@ -1,0 +1,9 @@
+{
+  "name": "emilys",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Landing de pedidos de Emily's — menú, carrito y envío por WhatsApp.",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

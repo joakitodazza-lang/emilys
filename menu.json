@@ -1,0 +1,206 @@
+{
+  "categories": [
+    {
+      "category": "Hamburguesas",
+      "note": "Todas incluyen papas fritas 🍟 · S: Simple · D: Doble · T: Triple",
+      "items": [
+        {
+          "id": "cheese",
+          "name": "Cheese Burger",
+          "emoji": "🍔",
+          "badge": null,
+          "image": null,
+          "description": "Pan de papa, medallón de 100 g con cheddar.",
+          "variants": [
+            { "label": "Simple", "price": 13000 },
+            { "label": "Doble", "price": 15500 },
+            { "label": "Triple", "price": 18000 }
+          ]
+        },
+        {
+          "id": "bacon",
+          "name": "Cheese Bacon",
+          "emoji": "🥓",
+          "badge": null,
+          "image": null,
+          "description": "Pan de papa, medallón de 100 g con cheddar y panceta.",
+          "variants": [
+            { "label": "Simple", "price": 13500 },
+            { "label": "Doble", "price": 16000 },
+            { "label": "Triple", "price": 18500 }
+          ]
+        },
+        {
+          "id": "emilys",
+          "name": "Emily's",
+          "emoji": "🍔",
+          "badge": "La de la casa",
+          "image": null,
+          "description": "Pan de papa, medallón de 100 g con cheddar, lechuga, panceta, pepinos agridulces y aderezo.",
+          "variants": [
+            { "label": "Simple", "price": 14000 },
+            { "label": "Doble", "price": 16500 },
+            { "label": "Triple", "price": 19000 }
+          ]
+        },
+        {
+          "id": "crispy",
+          "name": "Crispy",
+          "emoji": "🧅",
+          "badge": null,
+          "image": null,
+          "description": "Pan de papa, medallón de 100 g con cheddar, cebolla frita, panceta y salsa barbacoa.",
+          "variants": [
+            { "label": "Simple", "price": 14000 },
+            { "label": "Doble", "price": 16500 },
+            { "label": "Triple", "price": 19000 }
+          ]
+        },
+        {
+          "id": "cuarto",
+          "name": "Cuarto",
+          "emoji": "🍔",
+          "badge": null,
+          "image": null,
+          "description": "Pan de papa, medallón de 100 g con cheddar, cebollita, ketchup y mostaza.",
+          "variants": [
+            { "label": "Simple", "price": 13500 },
+            { "label": "Doble", "price": 16000 },
+            { "label": "Triple", "price": 18500 }
+          ]
+        },
+        {
+          "id": "clasica",
+          "name": "Clásica",
+          "emoji": "🍔",
+          "badge": null,
+          "image": null,
+          "description": "Pan de papa, medallón de 100 g con cheddar, lechuga, tomate, panceta y mayonesa.",
+          "variants": [
+            { "label": "Simple", "price": 14000 },
+            { "label": "Doble", "price": 16500 },
+            { "label": "Triple", "price": 19000 }
+          ]
+        },
+        {
+          "id": "legacy",
+          "name": "Legacy",
+          "emoji": "🍔",
+          "badge": null,
+          "image": null,
+          "description": "Pan de papa, medallón de 100 g con cheddar, panceta, lechuga, cebolla y salsa tasty.",
+          "variants": [
+            { "label": "Simple", "price": 14500 },
+            { "label": "Doble", "price": 16500 },
+            { "label": "Triple", "price": 19500 }
+          ]
+        },
+        {
+          "id": "chicken",
+          "name": "Chicken-Li",
+          "emoji": "🍗",
+          "badge": null,
+          "image": null,
+          "description": "Pan de papa, medallón de pollo Sadia con cheddar, lechuga, tomate, cebolla, panceta y salsa tasty.",
+          "variants": [
+            { "label": null, "price": 15000 }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Snacks",
+      "note": null,
+      "items": [
+        {
+          "id": "nuggets",
+          "name": "Nuggets",
+          "emoji": "🍗",
+          "badge": null,
+          "image": null,
+          "description": "Con dip de aderezo a elección.",
+          "variants": [
+            { "label": "x6", "price": 5000 },
+            { "label": "x12", "price": 9000 }
+          ]
+        },
+        {
+          "id": "papas",
+          "name": "Papas fritas",
+          "emoji": "🍟",
+          "badge": null,
+          "image": null,
+          "description": "Comunes o sazonadas.",
+          "variants": [
+            { "label": null, "price": 4500 }
+          ]
+        },
+        {
+          "id": "aros",
+          "name": "Aros de cebolla",
+          "emoji": "🧅",
+          "badge": null,
+          "image": null,
+          "description": "Comunes o sazonados.",
+          "variants": [
+            { "label": "x6", "price": 5000 },
+            { "label": "x12", "price": 8000 }
+          ]
+        },
+        {
+          "id": "nugpapas",
+          "name": "Nuggets + Papas",
+          "emoji": "🍟",
+          "badge": null,
+          "image": null,
+          "description": "6 nuggets + papas fritas y dip de salsa.",
+          "variants": [
+            { "label": null, "price": 8500 }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Bebidas",
+      "note": null,
+      "items": [
+        {
+          "id": "coca500",
+          "name": "Coca / Zero / Sprite 500 ml",
+          "emoji": "🥤",
+          "badge": null,
+          "image": null,
+          "description": "",
+          "variants": [ { "label": null, "price": 3000 } ]
+        },
+        {
+          "id": "coca15",
+          "name": "Coca Cola / Sprite 1.5 L",
+          "emoji": "🥤",
+          "badge": null,
+          "image": null,
+          "description": "",
+          "variants": [ { "label": null, "price": 6000 } ]
+        },
+        {
+          "id": "cocazero15",
+          "name": "Coca Cola Zero 1.5 L",
+          "emoji": "🥤",
+          "badge": null,
+          "image": null,
+          "description": "",
+          "variants": [ { "label": null, "price": 6000 } ]
+        },
+        {
+          "id": "agua",
+          "name": "Agua 500 ml",
+          "emoji": "💧",
+          "badge": null,
+          "image": null,
+          "description": "",
+          "variants": [ { "label": null, "price": 2000 } ]
+        }
+      ]
+    }
+  ]
+}

@@ -702,7 +702,7 @@
   </nav>
 
   <!-- ===================== MENÚ ===================== -->
-  <main class="wrap" id="menu"></main>
+  <main class="wrap" id="menu"><!-- MENU:START --><!-- MENU:END --></main>
 
   <!-- ===================== DATOS DEL CLIENTE ===================== -->
   <div class="wrap">
@@ -853,6 +853,7 @@
        CATÁLOGO — 4 hamburguesas en categorías (+ acompañamientos)
        Cada item admite "image" (URL) para conectar con Treinta Pro.
        ============================================================ */
+    /* MENU-DATA:START (lo mantiene sincronizado el armado desde menu.json) */
     const MENU = [
       {
         category: "Hamburguesas",
@@ -911,6 +912,7 @@
         ]
       }
     ];
+    /* MENU-DATA:END */
 
     /* Índice plano "id::indiceVariante" -> { itemId, name, label, price } */
     const PRODUCTS = new Map();
@@ -1355,7 +1357,8 @@
 
     function init() {
       renderNotices();
-      renderMenu();
+      // Si Vercel ya armó el menú como HTML (SEO), no lo re-dibujamos.
+      if (!dom.menu.querySelector(".menu-board")) renderMenu();
       renderCategoryNav();
       initScrollSpy();
       renderTransferBox();
