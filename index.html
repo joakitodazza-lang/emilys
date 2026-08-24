@@ -1105,7 +1105,13 @@
         return;
       }
 
-      window.open(buildWhatsappLink(), "_blank", "noopener");
+      // Intenta abrir WhatsApp en pestaña nueva; si el navegador lo bloquea
+      // (típico en celulares), redirige en la misma pestaña.
+      const link = buildWhatsappLink();
+      const win = window.open(link, "_blank");
+      if (!win || win.closed || typeof win.closed === "undefined") {
+        window.location.href = link;
+      }
     }
 
     /* ============================================================
