@@ -411,6 +411,50 @@
     .stepper button:disabled { opacity: .4; cursor: not-allowed; background: #9aa6bd; }
     .stepper .qty { min-width: 24px; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
 
+    /* Nota de categoría (ej. "incluyen papas") */
+    .group-note {
+      margin: -8px 0 16px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+    }
+
+    /* --- Selector de tamaño / cantidad (variantes) --- */
+    .variants {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 2px 0 10px;
+    }
+    .variant {
+      flex: 1 1 0;
+      min-width: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      padding: 5px 6px;
+      border: 2px solid var(--ink);
+      border-radius: 9px;
+      background: var(--white);
+      color: var(--ink);
+      font: inherit;
+      font-size: .7rem;
+      font-weight: 700;
+      line-height: 1.1;
+      cursor: pointer;
+      transition: background .12s ease, color .12s ease;
+    }
+    .variant small {
+      font-size: .82rem;
+      font-weight: 800;
+      color: var(--red-deep);
+      font-variant-numeric: tabular-nums;
+    }
+    .variant[aria-pressed="true"] { background: var(--blue); color: var(--white); border-color: var(--ink); }
+    .variant[aria-pressed="true"] small { color: #ffe08a; }
+    .variant:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
     /* ============================================================
        6. FORMULARIO DEL CLIENTE
        ============================================================ */
@@ -593,7 +637,7 @@
     <div class="wrap">
       <div class="brand-mark" aria-hidden="true">🍔</div>
       <h1 class="brand-name">Emily's</h1>
-      <p class="brand-tagline">BURGERS · FRIES · MALTS</p>
+      <p class="brand-tagline">FAST FOOD DE BARRIO</p>
       <p class="schedule">
         <span class="status-dot" aria-hidden="true"></span>
         Abierto: <strong>Mar a Dom · 19:00 a 00:00</strong>
@@ -697,9 +741,9 @@
 
       /* Avisos del día: se muestran en la cinta y en la lista */
       notices: [
-        { icon: "🛵", label: "Delivery habilitado", text: "Palermo, Villa Crespo, Colegiales y Chacarita." },
-        { icon: "⏱️", label: "Demora estimada",     text: "Delivery 40-55 min · Retiro 20 min." },
-        { icon: "🔥", label: "Combo del día",        text: "Sencilla + papas + gaseosa por solo $8.900 hasta las 21:00." }
+        { icon: "🍟", label: "¡Ojo!",             text: "Todas las hamburguesas incluyen papas fritas." },
+        { icon: "🛵", label: "Delivery",           text: "Consultanos por tu zona y el costo de envío." },
+        { icon: "⏱️", label: "Demora estimada",    text: "Delivery 40-55 min · Retiro 20 min." }
       ]
     };
 
@@ -709,30 +753,68 @@
        ============================================================ */
     const MENU = [
       {
-        category: "Las Clásicas",
+        category: "Hamburguesas",
+        note: "Todas incluyen papas fritas 🍟 · S: Sencilla · D: Doble · T: Triple",
         items: [
-          { id: "california", name: "California Soul", description: "Cheeseburger smash short rib, cheddar, cebolla caramelizada y salsa de la casa.", price: 9500,  image: null, emoji: "🍔", badge: null },
-          { id: "double",     name: "Doble Trouble",  description: "Doble carne smash, doble cheddar y cebolla a la plancha.",                     price: 13900, image: null, emoji: "🍔", badge: "La más pedida" }
+          { id: "cheese",  name: "Cheese Burger", emoji: "🍔", badge: null,
+            description: "Pan de papa, medallón de 100 g con cheddar.",
+            variants: [ { label: "Sencilla", price: 13000 }, { label: "Doble", price: 15500 }, { label: "Triple", price: 18000 } ] },
+          { id: "bacon",   name: "Cheese Bacon", emoji: "🥓", badge: null,
+            description: "Pan de papa, medallón de 100 g con cheddar y panceta.",
+            variants: [ { label: "Sencilla", price: 13500 }, { label: "Doble", price: 16000 }, { label: "Triple", price: 18500 } ] },
+          { id: "emilys",  name: "Emily's", emoji: "🍔", badge: "La de la casa",
+            description: "Pan de papa, medallón de 100 g con cheddar, lechuga, panceta, pepinos agridulces y aderezo.",
+            variants: [ { label: "Sencilla", price: 14000 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19000 } ] },
+          { id: "crispy",  name: "Crispy", emoji: "🧅", badge: null,
+            description: "Pan de papa, medallón de 100 g con cheddar, cebolla frita, panceta y salsa barbacoa.",
+            variants: [ { label: "Sencilla", price: 14000 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19000 } ] },
+          { id: "cuarto",  name: "Cuarto", emoji: "🍔", badge: null,
+            description: "Pan de papa, medallón de 100 g con cheddar, cebollita, ketchup y mostaza.",
+            variants: [ { label: "Sencilla", price: 13500 }, { label: "Doble", price: 16000 }, { label: "Triple", price: 18500 } ] },
+          { id: "clasica", name: "Clásica", emoji: "🍔", badge: null,
+            description: "Pan de papa, medallón de 100 g con cheddar, lechuga, tomate, panceta y mayonesa.",
+            variants: [ { label: "Sencilla", price: 14000 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19000 } ] },
+          { id: "legacy",  name: "Legacy", emoji: "🍔", badge: null,
+            description: "Pan de papa, medallón de 100 g con cheddar, panceta, lechuga, cebolla y salsa tasty.",
+            variants: [ { label: "Sencilla", price: 14500 }, { label: "Doble", price: 16500 }, { label: "Triple", price: 19500 } ] },
+          { id: "chicken", name: "Chicken-Li", emoji: "🍗", badge: null,
+            description: "Pan de papa, medallón de pollo Sadia con cheddar, lechuga, tomate, cebolla, panceta y salsa tasty.",
+            variants: [ { label: null, price: 15000 } ] }
         ]
       },
       {
-        category: "Las Especiales",
+        category: "Snacks",
         items: [
-          { id: "jalapeno",   name: "Jalapeño Smash", description: "Queso suizo, jalapeño crudo, cebolla caramelizada y salsa de la casa.",        price: 11500, image: null, emoji: "🌶️", badge: null },
-          { id: "blue",       name: "Blue Diner",     description: "Queso azul, cebolla caramelizada y rúcula fresca.",                            price: 12500, image: null, emoji: "🧀", badge: null }
+          { id: "nuggets",  name: "Nuggets", emoji: "🍗", badge: null,
+            description: "Con dip de aderezo a elección.",
+            variants: [ { label: "x6", price: 5000 }, { label: "x12", price: 9000 } ] },
+          { id: "papas",    name: "Papas fritas", emoji: "🍟", badge: null,
+            description: "Comunes o sazonadas.",
+            variants: [ { label: null, price: 4500 } ] },
+          { id: "aros",     name: "Aros de cebolla", emoji: "🧅", badge: null,
+            description: "Comunes o sazonados.",
+            variants: [ { label: "x6", price: 5000 }, { label: "x12", price: 8000 } ] },
+          { id: "nugpapas", name: "Nuggets + Papas", emoji: "🍟", badge: null,
+            description: "6 nuggets + papas fritas y dip de salsa.",
+            variants: [ { label: null, price: 8500 } ] }
         ]
       },
       {
-        category: "Para acompañar",
+        category: "Bebidas",
         items: [
-          { id: "fries",      name: "Papas Emily's",  description: "Papas a la francesa con nuestra salsa especial.",                              price: 4900, image: null, emoji: "🍟", badge: null },
-          { id: "soda",       name: "Gaseosa",        description: "Línea Coca-Cola bien fría.",                                                   price: 2900, image: null, emoji: "🥤", badge: null }
+          { id: "coca500",    name: "Coca / Zero / Sprite 500 ml", emoji: "🥤", badge: null, description: "", variants: [ { label: null, price: 3000 } ] },
+          { id: "coca15",     name: "Coca Cola / Sprite 1.5 L",    emoji: "🥤", badge: null, description: "", variants: [ { label: null, price: 6000 } ] },
+          { id: "cocazero15", name: "Coca Cola Zero 1.5 L",        emoji: "🥤", badge: null, description: "", variants: [ { label: null, price: 6000 } ] },
+          { id: "agua",       name: "Agua 500 ml",                 emoji: "💧", badge: null, description: "", variants: [ { label: null, price: 2000 } ] }
         ]
       }
     ];
 
-    /* Índice plano id -> producto */
-    const PRODUCTS = new Map(MENU.flatMap(g => g.items).map(i => [i.id, i]));
+    /* Índice plano "id::indiceVariante" -> { itemId, name, label, price } */
+    const PRODUCTS = new Map();
+    MENU.forEach(g => g.items.forEach(it => it.variants.forEach((v, vi) => {
+      PRODUCTS.set(it.id + "::" + vi, { itemId: it.id, name: it.name, label: v.label, price: v.price });
+    })));
 
     /* Estado del carrito: id -> cantidad */
     const cart = new Map();
@@ -783,18 +865,33 @@
         ? '<img src="' + item.image + '" alt="' + item.name + '" />'
         : '<span aria-hidden="true">' + item.emoji + '</span>';
 
+      const hasChoice = item.variants.length > 1;
+      const first = item.variants[0];
+
+      const variantsHtml = hasChoice
+        ? '<div class="variants" role="group" aria-label="Elegí una opción de ' + item.name + '">' +
+            item.variants.map((v, i) =>
+              '<button type="button" class="variant" data-choose="' + i + '" aria-pressed="' + (i === 0) + '">' +
+                '<span>' + v.label + '</span><small>' + formatPrice(v.price) + '</small>' +
+              '</button>'
+            ).join("") +
+          '</div>'
+        : "";
+
       const li = document.createElement("li");
       li.className = "product";
       li.dataset.id = item.id;
+      li.dataset.vi = "0";
       li.innerHTML = [
         '<div class="product-media">', media, '</div>',
         '<div class="product-body">',
           '<h3 class="product-name">', item.name,
             item.badge ? '<span class="tag">' + item.badge + '</span>' : "",
           '</h3>',
-          '<p class="product-desc">' + item.description + '</p>',
+          item.description ? '<p class="product-desc">' + item.description + '</p>' : "",
+          variantsHtml,
           '<div class="product-footer">',
-            '<p class="product-price">' + formatPrice(item.price) + '</p>',
+            '<p class="product-price" data-price>' + formatPrice(first.price) + '</p>',
             '<div class="stepper">',
               '<button type="button" data-action="remove" aria-label="Quitar una unidad de ' + item.name + '" disabled>&minus;</button>',
               '<span class="qty" data-qty aria-live="polite" aria-label="Cantidad de ' + item.name + '">0</span>',
@@ -828,7 +925,14 @@
         ul.className = "product-list";
         group.items.forEach(item => ul.appendChild(productTemplate(item)));
 
-        body.append(title, ul);
+        body.append(title);
+        if (group.note) {
+          const note = document.createElement("p");
+          note.className = "group-note";
+          note.textContent = group.note;
+          body.append(note);
+        }
+        body.append(ul);
         board.append(strip, body);
         frag.appendChild(board);
       });
@@ -839,27 +943,51 @@
     /* ============================================================
        CARRITO
        ============================================================ */
-    function changeQuantity(id, delta) {
-      if (!PRODUCTS.has(id)) return;
-      const next = (cart.get(id) || 0) + delta;
-      if (next <= 0) cart.delete(id); else cart.set(id, next);
-      updateProductCard(id);
+    /* Clave del carrito para la variante seleccionada en una tarjeta */
+    function cardKey(card) {
+      return card.dataset.id + "::" + card.dataset.vi;
+    }
+
+    function changeQuantity(card, delta) {
+      const key = cardKey(card);
+      if (!PRODUCTS.has(key)) return;
+      const next = (cart.get(key) || 0) + delta;
+      if (next <= 0) cart.delete(key); else cart.set(key, next);
+      refreshCard(card);
       updateCartBar();
     }
 
-    function updateProductCard(id) {
-      const card = document.querySelector('.product[data-id="' + id + '"]');
-      if (!card) return;
-      const qty = cart.get(id) || 0;
+    /* Cambia la variante (tamaño / cantidad) activa de la tarjeta */
+    function selectVariant(card, index) {
+      card.dataset.vi = String(index);
+      card.querySelectorAll(".variant").forEach(b =>
+        b.setAttribute("aria-pressed", b.dataset.choose === String(index))
+      );
+      refreshCard(card);
+    }
+
+    /* Refresca precio, cantidad y estado de la tarjeta según su variante activa */
+    function refreshCard(card) {
+      const key = cardKey(card);
+      const prod = PRODUCTS.get(key);
+      const qty = cart.get(key) || 0;
+
+      card.querySelector("[data-price]").textContent = formatPrice(prod.price);
       card.querySelector("[data-qty]").textContent = qty;
       card.querySelector('[data-action="remove"]').disabled = qty === 0;
-      card.classList.toggle("is-active", qty > 0);
+
+      // La tarjeta se resalta si CUALQUIER variante del producto está en el carrito
+      const prefix = card.dataset.id + "::";
+      let anyActive = false;
+      cart.forEach((_, k) => { if (k.indexOf(prefix) === 0) anyActive = true; });
+      card.classList.toggle("is-active", anyActive);
     }
 
     function getCartLines() {
-      return Array.from(cart.entries()).map(([id, qty]) => {
-        const p = PRODUCTS.get(id);
-        return { id, name: p.name, unitPrice: p.price, quantity: qty, subtotal: p.price * qty };
+      return Array.from(cart.entries()).map(([key, qty]) => {
+        const p = PRODUCTS.get(key);
+        const name = p.label ? p.name + " (" + p.label + ")" : p.name;
+        return { key, name, unitPrice: p.price, quantity: qty, subtotal: p.price * qty };
       });
     }
 
@@ -948,12 +1076,20 @@
     /* ============================================================
        EVENTOS
        ============================================================ */
-    function handleStepperClick(event) {
-      const button = event.target.closest("button[data-action]");
-      if (!button) return;
-      const card = button.closest(".product");
-      if (!card) return;
-      changeQuantity(card.dataset.id, button.dataset.action === "add" ? 1 : -1);
+    function handleMenuClick(event) {
+      // 1) ¿Tocó un selector de variante (tamaño / cantidad)?
+      const variantBtn = event.target.closest(".variant");
+      if (variantBtn) {
+        const card = variantBtn.closest(".product");
+        if (card) selectVariant(card, variantBtn.dataset.choose);
+        return;
+      }
+      // 2) ¿Tocó el + o el − del stepper?
+      const stepBtn = event.target.closest("button[data-action]");
+      if (stepBtn) {
+        const card = stepBtn.closest(".product");
+        if (card) changeQuantity(card, stepBtn.dataset.action === "add" ? 1 : -1);
+      }
     }
 
     function init() {
@@ -961,7 +1097,7 @@
       renderMenu();
       updateCartBar();
 
-      dom.menu.addEventListener("click", handleStepperClick);
+      dom.menu.addEventListener("click", handleMenuClick);
       dom.form.addEventListener("submit", handleSubmit);
       dom.name.addEventListener("input", hideError);
       dom.year.textContent = new Date().getFullYear();
