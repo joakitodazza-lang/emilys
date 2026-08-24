@@ -1,4 +1,4 @@
-# La Brasa Burger 🍔
+# Emily's 🍔
 
 Landing page de pedidos para una hamburguesería estilo American Diner. Los clientes
 arman su pedido y lo envían directo al WhatsApp del local.
@@ -20,8 +20,8 @@ Antes de publicar, editá el objeto `CONFIG` dentro de `index.html`:
 
 | Campo | Descripción |
 |-------|-------------|
-| `whatsappNumber` | Número del local en formato internacional, sin `+` ni espacios (ej. México: `525512345678`). |
-| `currency` / `locale` | Moneda y formato regional (ej. `MXN` / `es-MX`). |
+| `whatsappNumber` | Número del local en formato internacional, sin `+` ni espacios (ej. Argentina: `5491155957052`). |
+| `currency` / `locale` | Moneda y formato regional (ej. `ARS` / `es-AR`). |
 | `notices` | Avisos del día que se muestran en la marquesina. |
 
 El menú se edita en el arreglo `MENU` del mismo archivo.

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Smash burgers estilo American Diner. Pedí y recibí tu pedido por WhatsApp." />
   <meta name="theme-color" content="#1a46c8" />
-  <title>La Brasa Burger — American Diner</title>
+  <title>Emily's — American Diner</title>
 
   <!-- Tipografías retro (con fallback si no hay conexión) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -592,7 +592,7 @@
 
     <div class="wrap">
       <div class="brand-mark" aria-hidden="true">🍔</div>
-      <h1 class="brand-name">La Brasa Burger</h1>
+      <h1 class="brand-name">Emily's</h1>
       <p class="brand-tagline">BURGERS · FRIES · MALTS</p>
       <p class="schedule">
         <span class="status-dot" aria-hidden="true"></span>
@@ -658,7 +658,7 @@
     </section>
 
     <footer class="site-footer">
-      <p>© <span id="year"></span> La Brasa Burger · Pedidos por WhatsApp</p>
+      <p>© <span id="year"></span> Emily's · Pedidos por WhatsApp</p>
     </footer>
   </div>
 
@@ -687,18 +687,19 @@
        CONFIGURACIÓN DEL NEGOCIO
        ============================================================ */
     const CONFIG = {
-      businessName: "La Brasa Burger",
-      /* Reemplazá por tu número real: formato internacional, sin + ni espacios.
-         Ej. México: 52 55 1234 5678 -> "525512345678" */
-      whatsappNumber: "52XXXXXXXXXX",
-      currency: "MXN",
-      locale: "es-MX",
+      businessName: "Emily's",
+      /* Número real del local en formato internacional, sin + ni espacios.
+         Argentina (celular): 54 9 + área sin 0 + número sin 15.
+         Buenos Aires 11 5595-7052 -> "5491155957052" */
+      whatsappNumber: "5491155957052",
+      currency: "ARS",
+      locale: "es-AR",
 
       /* Avisos del día: se muestran en la cinta y en la lista */
       notices: [
-        { icon: "🛵", label: "Delivery habilitado", text: "Roma Norte, Condesa, Juárez y Cuauhtémoc." },
+        { icon: "🛵", label: "Delivery habilitado", text: "Palermo, Villa Crespo, Colegiales y Chacarita." },
         { icon: "⏱️", label: "Demora estimada",     text: "Delivery 40-55 min · Retiro 20 min." },
-        { icon: "🔥", label: "Combo del día",        text: "Sencilla + papas + agua por solo $199 hasta las 21:00." }
+        { icon: "🔥", label: "Combo del día",        text: "Sencilla + papas + gaseosa por solo $8.900 hasta las 21:00." }
       ]
     };
 
@@ -710,22 +711,22 @@
       {
         category: "Las Clásicas",
         items: [
-          { id: "california", name: "California Soul", description: "Cheeseburger smash short rib, cheddar, cebolla caramelizada y salsa de la casa.", price: 149, image: null, emoji: "🍔", badge: null },
-          { id: "double",     name: "Doble Trouble",  description: "Doble carne smash, doble cheddar y cebolla a la plancha.",                     price: 199, image: null, emoji: "🍔", badge: "La más pedida" }
+          { id: "california", name: "California Soul", description: "Cheeseburger smash short rib, cheddar, cebolla caramelizada y salsa de la casa.", price: 9500,  image: null, emoji: "🍔", badge: null },
+          { id: "double",     name: "Doble Trouble",  description: "Doble carne smash, doble cheddar y cebolla a la plancha.",                     price: 13900, image: null, emoji: "🍔", badge: "La más pedida" }
         ]
       },
       {
         category: "Las Especiales",
         items: [
-          { id: "jalapeno",   name: "Jalapeño Smash", description: "Queso suizo, jalapeño crudo, cebolla caramelizada y salsa smashy.",           price: 179, image: null, emoji: "🌶️", badge: null },
-          { id: "blue",       name: "Blue Diner",     description: "Queso azul, cebolla caramelizada y rúcula fresca.",                            price: 189, image: null, emoji: "🧀", badge: null }
+          { id: "jalapeno",   name: "Jalapeño Smash", description: "Queso suizo, jalapeño crudo, cebolla caramelizada y salsa de la casa.",        price: 11500, image: null, emoji: "🌶️", badge: null },
+          { id: "blue",       name: "Blue Diner",     description: "Queso azul, cebolla caramelizada y rúcula fresca.",                            price: 12500, image: null, emoji: "🧀", badge: null }
         ]
       },
       {
         category: "Para acompañar",
         items: [
-          { id: "fries",      name: "Smashy Fries",   description: "Papas a la francesa con nuestra salsa especial.",                              price: 65,  image: null, emoji: "🍟", badge: null },
-          { id: "soda",       name: "Refresco",       description: "Línea Coca-Cola bien fría.",                                                   price: 45,  image: null, emoji: "🥤", badge: null }
+          { id: "fries",      name: "Papas Emily's",  description: "Papas a la francesa con nuestra salsa especial.",                              price: 4900, image: null, emoji: "🍟", badge: null },
+          { id: "soda",       name: "Gaseosa",        description: "Línea Coca-Cola bien fría.",                                                   price: 2900, image: null, emoji: "🥤", badge: null }
         ]
       }
     ];
