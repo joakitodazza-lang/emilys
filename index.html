@@ -545,6 +545,12 @@
       word-break: break-all;
       font-variant-numeric: tabular-nums;
     }
+    .transfer-box .t-note {
+      margin: 10px 0 0;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--red-deep);
+    }
 
     .form-error {
       display: none;
@@ -812,10 +818,10 @@
          Los que dejes vacíos ("") no se muestran. */
       payment: {
         transfer: {
-          alias:   "COMPLETAR.ALIAS",
-          cbu:     "",
-          titular: "Emily's",
-          banco:   ""
+          alias:   "emilys.arg",
+          cbu:     "0000003100031779841303",
+          titular: "Daza Joaquín",
+          banco:   "Mercado Pago"
         }
       },
 
@@ -1161,7 +1167,8 @@
         rows.map(r =>
           '<div class="t-row"><span class="t-label">' + r[0] + '</span>' +
           '<span class="t-val">' + r[1] + '</span></div>'
-        ).join("");
+        ).join("") +
+        '<p class="t-note">📎 Enviá el comprobante por WhatsApp para confirmar tu pedido.</p>';
     }
 
     /* Muestra/oculta los campos según la forma de pago elegida */
@@ -1247,6 +1254,8 @@
         if (t.cbu)     msg.push("• CBU/CVU: " + t.cbu);
         if (t.titular) msg.push("• Titular: " + t.titular);
         if (t.banco)   msg.push("• Banco: " + t.banco);
+        msg.push("");
+        msg.push("Te paso el comprobante por acá para confirmar el pedido 📎");
       } else {
         msg.push("Pago: " + PAY_LABELS[pay]);
       }
