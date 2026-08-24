@@ -150,23 +150,16 @@
       text-shadow: 3px 3px 0 var(--red), 6px 6px 0 rgba(0, 0, 0, .28);
     }
 
-    /* Logo de la marca sobre recuadro blanco (estilo cartel de diner) */
-    .brand-logo {
-      width: min(260px, 68vw);
-      aspect-ratio: 1 / 1;
+    /* Wordmark "Emily's" en el encabezado (sin fondo, blanco sobre azul) */
+    .brand-wordmark {
       margin: 0 auto;
-      background: var(--white);
-      border: 3px solid var(--ink);
-      border-radius: 22px;
-      box-shadow: var(--shadow-card);
-      overflow: hidden;
-      display: grid;
-      place-items: center;
+      width: min(340px, 82vw);
     }
-    .brand-logo img {
-      width: 130%;   /* zoom para recortar el margen blanco del archivo */
-      height: 130%;
-      object-fit: contain;
+    .brand-wordmark img {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(3px 3px 0 var(--red));
     }
 
     .brand-tagline {
@@ -585,6 +578,9 @@
       line-height: 1;
     }
 
+    /* Nenita (mascota) como detalle en la barra del carrito */
+    .cart-mascot { display: none; }
+
     .btn-whatsapp {
       flex: 1;
       display: inline-flex;
@@ -624,6 +620,7 @@
       .cart-bar-inner { gap: 20px; }
       .btn-whatsapp { flex: 0 0 auto; padding: 15px 30px; }
       .cart-summary { flex: 1; }
+      .cart-mascot { display: block; width: 52px; height: auto; flex: 0 0 auto; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -654,8 +651,8 @@
     </div>
 
     <div class="wrap">
-      <h1 class="brand-logo">
-        <img src="logo.jpg" alt="Emily's" width="600" height="600" />
+      <h1 class="brand-wordmark">
+        <img src="wordmark.png" alt="Emily's" width="1846" height="520" />
       </h1>
       <p class="brand-tagline">FAST FOOD DE BARRIO</p>
       <p class="schedule">
@@ -731,6 +728,7 @@
   <!-- ===================== BARRA FLOTANTE ===================== -->
   <aside class="cart-bar" aria-label="Resumen del pedido">
     <div class="wrap cart-bar-inner">
+      <img class="cart-mascot" src="mascot.png" alt="" aria-hidden="true" />
       <div class="cart-summary">
         <p class="cart-count" id="cart-count">Carrito vacío</p>
         <p class="cart-total" id="cart-total" aria-live="polite" aria-atomic="true">$0</p>
