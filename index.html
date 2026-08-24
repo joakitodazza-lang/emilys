@@ -150,6 +150,25 @@
       text-shadow: 3px 3px 0 var(--red), 6px 6px 0 rgba(0, 0, 0, .28);
     }
 
+    /* Logo de la marca sobre recuadro blanco (estilo cartel de diner) */
+    .brand-logo {
+      width: min(260px, 68vw);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+      background: var(--white);
+      border: 3px solid var(--ink);
+      border-radius: 22px;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+    .brand-logo img {
+      width: 130%;   /* zoom para recortar el margen blanco del archivo */
+      height: 130%;
+      object-fit: contain;
+    }
+
     .brand-tagline {
       margin: 10px auto 0;
       font-family: var(--font-display);
@@ -635,8 +654,9 @@
     </div>
 
     <div class="wrap">
-      <div class="brand-mark" aria-hidden="true">🍔</div>
-      <h1 class="brand-name">Emily's</h1>
+      <h1 class="brand-logo">
+        <img src="logo.jpg" alt="Emily's" width="600" height="600" />
+      </h1>
       <p class="brand-tagline">FAST FOOD DE BARRIO</p>
       <p class="schedule">
         <span class="status-dot" aria-hidden="true"></span>
