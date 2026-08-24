@@ -94,42 +94,6 @@
       background-position: 0 0, 15px 15px;
     }
 
-    /* --- Sello "starburst" (como el POR SOLO $199) --- */
-    .seal {
-      position: relative;
-      width: 92px;
-      height: 92px;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      color: var(--white);
-      transform: rotate(-8deg);
-      flex: 0 0 auto;
-    }
-    .seal::before {
-      content: "";
-      position: absolute;
-      inset: -8px;
-      z-index: 0;
-      background: repeating-conic-gradient(var(--red) 0 9deg, var(--red-deep) 9deg 18deg);
-      border-radius: 50%;
-    }
-    .seal-face {
-      position: relative;
-      z-index: 1;
-      width: 74px;
-      height: 74px;
-      border-radius: 50%;
-      background: var(--red);
-      border: 2px dashed rgba(255, 255, 255, .85);
-      display: grid;
-      place-items: center;
-      line-height: 1;
-      padding: 4px;
-    }
-    .seal-small { font-family: var(--font-body); font-size: .5rem; font-weight: 800; letter-spacing: .05em; }
-    .seal-big   { font-family: var(--font-display); font-size: 1.25rem; }
-
     /* ============================================================
        3. ENCABEZADO
        ============================================================ */
@@ -170,12 +134,6 @@
       color: #ffd9a0;
     }
 
-    .header-seal {
-      position: absolute;
-      top: 14px;
-      right: max(10px, calc((100vw - var(--max-width)) / 2 + 8px));
-    }
-
     .schedule {
       display: inline-flex;
       align-items: center;
@@ -211,37 +169,24 @@
       position: relative;
     }
 
-    /* Cenefa de cuadros arriba y abajo del tablero */
-    .marquee::before,
-    .marquee::after {
-      content: "";
-      position: absolute;
-      left: 0; right: 0;
-      height: 14px;
-      background-color: var(--white);
-      background-image:
-        linear-gradient(45deg, var(--red) 25%, transparent 25%, transparent 75%, var(--red) 75%),
-        linear-gradient(45deg, var(--red) 25%, transparent 25%, transparent 75%, var(--red) 75%);
-      background-size: 14px 14px;
-      background-position: 0 0, 7px 7px;
-      z-index: 2;
-    }
-    .marquee::before { top: 0; }
-    .marquee::after  { bottom: 0; }
-
     .marquee-inner {
-      padding: 26px 16px;
+      padding: 18px 16px;
       display: grid;
       gap: 8px;
     }
 
     .marquee-heading {
-      text-align: center;
+      width: fit-content;
+      margin: 0 auto 8px;
       font-family: var(--font-display);
-      font-size: 1.9rem;
-      letter-spacing: .04em;
-      color: var(--white);
-      text-shadow: 2px 2px 0 var(--red-deep);
+      font-size: 1.5rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--red);
+      background: var(--board);
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      padding: 6px 22px 4px;
     }
 
     .marquee-track-mask {
@@ -276,12 +221,13 @@
       gap: 8px;
     }
     .notice {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 10px;
-      align-items: start;
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 8px;
       color: #fff;
-      font-size: .85rem;
+      font-size: .9rem;
+      text-align: center;
     }
     .notice-icon { font-size: 1rem; }
     .notice b { color: #ffe08a; }
@@ -686,16 +632,9 @@
 <body>
   <!-- ===================== ENCABEZADO ===================== -->
   <header class="site-header">
-    <div class="header-seal seal" aria-hidden="true">
-      <span class="seal-face">
-        <span class="seal-small">MADE WITH</span>
-        <span class="seal-big">♥</span>
-      </span>
-    </div>
-
     <div class="wrap">
       <h1 class="brand-wordmark">
-        <img src="wordmark.png" alt="Emily's" width="1846" height="571" />
+        <img src="wordmark.png" alt="Emily's" width="1673" height="650" />
       </h1>
       <p class="brand-tagline">FAST FOOD DE BARRIO</p>
       <p class="schedule">
@@ -705,8 +644,6 @@
     </div>
   </header>
 
-  <div class="checker-strip" aria-hidden="true"></div>
-
   <!-- ===================== TABLERO DE AVISOS =====================
        Editá los avisos del día en el arreglo CONFIG.notices (en el <script>).
        Se reflejan solos en la cinta que se desplaza y en la lista.
@@ -714,7 +651,7 @@
   <div class="wrap">
     <section class="marquee" aria-label="Avisos del día">
       <div class="marquee-inner">
-        <h2 class="marquee-heading">★ Avisos de hoy ★</h2>
+        <h2 class="marquee-heading">Avisos de hoy</h2>
         <div class="marquee-track-mask" aria-hidden="true">
           <div class="marquee-track" id="marquee-track"></div>
         </div>
@@ -983,10 +920,6 @@
         board.className = "menu-board";
         board.id = slug(group.category);
 
-        const strip = document.createElement("div");
-        strip.className = "checker-strip";
-        strip.setAttribute("aria-hidden", "true");
-
         const body = document.createElement("div");
         body.className = "menu-board-body";
 
@@ -1006,7 +939,7 @@
           body.append(note);
         }
         body.append(ul);
-        board.append(strip, body);
+        board.append(body);
         frag.appendChild(board);
       });
 
