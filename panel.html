@@ -126,6 +126,7 @@
     .ticket .t-line { display: flex; justify-content: space-between; gap: 10px; margin: 1mm 0; }
     .ticket .t-label { font-weight: 700; }
     .ticket .t-total { font-size: 20px; font-weight: 800; }
+    .ticket .t-strong { font-size: 16px; font-weight: 800; }
     .ticket .t-note { font-size: 12px; margin: 2mm 0 0; }
 
     .empty { color: var(--muted); font-style: italic; padding: 20px; text-align: center; }
@@ -213,16 +214,27 @@
     /* ---- Parseo del mensaje de WhatsApp ---- */
     function parseOrder(text) {
       const lines = text.split(/\r?\n/).map(l => l.trim());
-      const order = { items: [], total: "", cliente: "", entrega: "", pago: "" };
+      const order = {
+        items: [], total: "", cliente: "", entrega: "", pago: "",
+        direccion: "", entrecalles: "", localidad: "", vuelto: ""
+      };
 
       lines.forEach(l => {
         let m = l.match(/^[•\-\*]?\s*(\d+)\s*x\s*(.+?)\s*—\s*(.+)$/);
         if (m) { order.items.push({ qty: parseInt(m[1], 10), name: m[2].trim(), price: m[3].trim() }); return; }
-        if (/^TOTAL:/i.test(l))    { order.total   = l.replace(/^TOTAL:\s*/i, "").trim(); return; }
-        if (/^Cliente:/i.test(l))  { order.cliente = l.replace(/^Cliente:\s*/i, "").trim(); return; }
-        if (/^Entrega:/i.test(l))  { order.entrega = l.replace(/^Entrega:\s*/i, "").trim(); return; }
-        if (/^Pago:/i.test(l))     { order.pago    = l.replace(/^Pago:\s*/i, "").trim(); return; }
+        if (/^TOTAL:/i.test(l))         { order.total       = l.replace(/^TOTAL:\s*/i, "").trim(); return; }
+        if (/^Cliente:/i.test(l))       { order.cliente     = l.replace(/^Cliente:\s*/i, "").trim(); return; }
+        if (/^Entrega:/i.test(l))       { order.entrega     = l.replace(/^Entrega:\s*/i, "").trim(); return; }
+        if (/^Direcci[oó]n:/i.test(l))  { order.direccion   = l.replace(/^Direcci[oó]n:\s*/i, "").trim(); return; }
+        if (/^Entre calles:/i.test(l))  { order.entrecalles = l.replace(/^Entre calles:\s*/i, "").trim(); return; }
+        if (/^Localidad:/i.test(l))     { order.localidad   = l.replace(/^Localidad:\s*/i, "").trim(); return; }
+        if (/^Pago:/i.test(l))          { order.pago        = l.replace(/^Pago:\s*/i, "").trim(); return; }
       });
+
+      // Vuelto (viene dentro de la línea de Pago cuando es efectivo)
+      const vm = order.pago.match(/vuelto\s*(\$[\s\d.,]+)\)/i);
+      if (vm) order.vuelto = vm[1].trim();
+
       return order;
     }
 
@@ -272,17 +284,30 @@
         '<div class="t-sub">Cliente: ' + esc(order.cliente || "-") + '</div>';
 
       /* ETIQUETA SOBRE */
-      dom.bag.innerHTML =
-        '<div class="t-center"><h2>EMILY\'S</h2>' +
-        '<div class="t-sub">Pedido #' + no + ' · ' + when + '</div></div>' +
-        '<div class="t-div"></div>' +
-        '<div class="t-line"><span class="t-label">Cliente</span><span>' + esc(order.cliente || "-") + '</span></div>' +
-        '<div class="t-line"><span class="t-label">Entrega</span><span>' + esc(order.entrega || "-") + '</span></div>' +
-        '<div class="t-line"><span class="t-label">Pago</span><span>' + esc(order.pago || "-") + '</span></div>' +
-        '<div class="t-div"></div>' +
-        itemsSmall +
-        '<div class="t-div"></div>' +
-        '<div class="t-line"><span class="t-label t-total">TOTAL</span><span class="t-total">' + esc(order.total || "-") + '</span></div>';
+      const displayPago = (order.pago || "-").replace(/\s*\(vuelto[^)]*\)/i, "").trim();
+      const bag = [];
+      bag.push('<div class="t-center"><h2>EMILY\'S</h2><div class="t-sub">Pedido #' + no + ' · ' + when + '</div></div>');
+      bag.push('<div class="t-div"></div>');
+      bag.push('<div class="t-line"><span class="t-label">Cliente</span><span>' + esc(order.cliente || "-") + '</span></div>');
+      bag.push('<div class="t-line"><span class="t-label">Entrega</span><span>' + esc(order.entrega || "-") + '</span></div>');
+
+      if (isDelivery(order.entrega)) {
+        if (order.direccion)   bag.push('<div class="t-line"><span class="t-label">Dirección</span><span>' + esc(order.direccion) + '</span></div>');
+        if (order.entrecalles) bag.push('<div class="t-line"><span class="t-label">Entre calles</span><span>' + esc(order.entrecalles) + '</span></div>');
+        if (order.localidad)   bag.push('<div class="t-line"><span class="t-label">Localidad</span><span>' + esc(order.localidad) + '</span></div>');
+      }
+
+      bag.push('<div class="t-line"><span class="t-label">Pago</span><span>' + esc(displayPago) + '</span></div>');
+      if (order.vuelto) {
+        bag.push('<div class="t-line"><span class="t-label t-strong">VUELTO</span><span class="t-strong">' + esc(order.vuelto) + '</span></div>');
+      }
+
+      bag.push('<div class="t-div"></div>');
+      bag.push(itemsSmall);
+      bag.push('<div class="t-div"></div>');
+      bag.push('<div class="t-line"><span class="t-label t-total">TOTAL</span><span class="t-total">' + esc(order.total || "-") + '</span></div>');
+
+      dom.bag.innerHTML = bag.join("");
     }
 
     /* ---- Impresión de un ticket puntual ---- */

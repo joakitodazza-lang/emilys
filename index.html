@@ -729,9 +729,25 @@
               <input type="radio" name="deliveryMethod" value="delivery" />
               <span class="option-text">
                 Envío a domicilio (Delivery)
-                <span class="option-hint">Coordinamos la dirección por WhatsApp</span>
+                <span class="option-hint">Completá tu dirección abajo</span>
               </span>
             </label>
+          </div>
+
+          <!-- Dirección (solo si es delivery) -->
+          <div class="pay-extra" id="delivery-fields" hidden>
+            <div class="field">
+              <label for="addr-street">Dirección (calle y altura)</label>
+              <input type="text" id="addr-street" name="addrStreet" placeholder="Ej: Gral. Arredondo 6219" autocomplete="street-address" />
+            </div>
+            <div class="field">
+              <label for="addr-between">Entre calles</label>
+              <input type="text" id="addr-between" name="addrBetween" placeholder="Ej: entre San Martín y Belgrano" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="addr-city">Localidad</label>
+              <input type="text" id="addr-city" name="addrCity" placeholder="Ej: Wilde" autocomplete="address-level2" />
+            </div>
           </div>
         </fieldset>
 
@@ -934,7 +950,11 @@
       cashNote:    $("#cash-note"),
       transferBox: $("#transfer-box"),
       payEfectivo: $("#pay-efectivo"),
-      payTransfer: $("#pay-transferencia")
+      payTransfer: $("#pay-transferencia"),
+      deliveryFields: $("#delivery-fields"),
+      addrStreet:  $("#addr-street"),
+      addrBetween: $("#addr-between"),
+      addrCity:    $("#addr-city")
     };
 
     const PAY_LABELS = {
@@ -1142,6 +1162,17 @@
     }
 
     /* ============================================================
+       ENTREGA (mostrar campos de dirección solo si es delivery)
+       ============================================================ */
+    function isDelivery() {
+      return dom.form.elements.deliveryMethod.value === "delivery";
+    }
+
+    function toggleDeliveryFields() {
+      dom.deliveryFields.hidden = !isDelivery();
+    }
+
+    /* ============================================================
        FORMA DE PAGO (efectivo/vuelto, transferencia, tarjetas)
        ============================================================ */
     function currentPayment() {
@@ -1219,9 +1250,6 @@
     function buildWhatsappText() {
       const { lines, total } = getCartTotals();
       const name = dom.name.value.trim();
-      const method = dom.form.elements.deliveryMethod.value === "delivery"
-        ? "Envío a domicilio (Delivery)"
-        : "Retiro en el local";
 
       const detail = lines
         .map(l => "• " + l.quantity + "x " + l.name + " — " + formatPrice(l.subtotal))
@@ -1234,9 +1262,17 @@
         "",
         "TOTAL: " + formatPrice(total),
         "",
-        "Cliente: " + name,
-        "Entrega: " + method
+        "Cliente: " + name
       ];
+
+      if (isDelivery()) {
+        msg.push("Entrega: Envío a domicilio (Delivery)");
+        msg.push("Dirección: " + dom.addrStreet.value.trim());
+        if (dom.addrBetween.value.trim()) msg.push("Entre calles: " + dom.addrBetween.value.trim());
+        if (dom.addrCity.value.trim())    msg.push("Localidad: " + dom.addrCity.value.trim());
+      } else {
+        msg.push("Entrega: Retiro en el local");
+      }
 
       const pay = currentPayment();
       if (pay === "efectivo") {
@@ -1280,6 +1316,10 @@
         showError("Necesitamos tu nombre para preparar el pedido.", dom.name);
         return;
       }
+      if (isDelivery() && dom.addrStreet.value.trim().length < 3) {
+        showError("Ingresá tu dirección para el envío a domicilio.", dom.addrStreet);
+        return;
+      }
       if (!/^\d{6,}$/.test(CONFIG.whatsappNumber.replace(/\D/g, ""))) {
         showError("Configurá el número de WhatsApp del local en CONFIG.whatsappNumber.");
         return;
@@ -1320,6 +1360,7 @@
       initScrollSpy();
       renderTransferBox();
       togglePayExtras();
+      toggleDeliveryFields();
       updateCartBar();
 
       dom.menu.addEventListener("click", handleMenuClick);
@@ -1327,6 +1368,7 @@
       dom.name.addEventListener("input", hideError);
       dom.form.addEventListener("change", e => {
         if (e.target.name === "payment") togglePayExtras();
+        if (e.target.name === "deliveryMethod") toggleDeliveryFields();
       });
       dom.cash.addEventListener("input", updateCash);
       dom.year.textContent = new Date().getFullYear();
