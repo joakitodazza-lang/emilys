@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Editor de zonas — Emily's</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.15.0/dist/leaflet-geoman.css" />
+  <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.15.0/dist/leaflet-geoman.min.js"></script>
+
+  <style>
+    :root {
+      --blue: #1a46c8; --red: #e0231a; --ink: #16181d; --bg: #eef1f8; --muted: #5f6570;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--ink); }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 18px 16px 60px; }
+    h1 { margin: 0 0 4px; font-size: 1.3rem; } h1 b { color: var(--red); }
+    .lead { margin: 0 0 14px; color: var(--muted); font-size: .9rem; }
+    .panel { background: #fff; border: 1px solid #d7dcea; border-radius: 12px; padding: 14px; box-shadow: 0 6px 18px rgba(20,30,70,.07); margin-bottom: 16px; }
+    .steps { margin: 0; padding-left: 18px; font-size: .9rem; }
+    .steps li { margin: 3px 0; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-top: 10px; }
+    .field { display: grid; gap: 4px; }
+    .field label { font-size: .78rem; font-weight: 700; color: var(--muted); }
+    .field input { padding: 9px 11px; font: inherit; border: 2px solid #cdd3e3; border-radius: 8px; }
+    #map { height: 520px; border: 2px solid var(--ink); border-radius: 10px; }
+    .btn { border: 0; border-radius: 10px; padding: 12px 18px; font: inherit; font-weight: 800; cursor: pointer; color: #fff; background: var(--blue); }
+    .btn.red { background: var(--red); }
+    .btn.ghost { background: #e7ebf6; color: var(--ink); }
+    .out { margin-top: 14px; }
+    textarea { width: 100%; min-height: 180px; font-family: "Consolas", monospace; font-size: .82rem; padding: 10px; border: 2px solid #cdd3e3; border-radius: 8px; }
+    .hint { font-size: .82rem; color: var(--muted); }
+    .ok { color: #1f7a3d; font-weight: 700; }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; font-size: .82rem; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--ink); }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1><b>Emily's</b> · Editor de zonas de entrega</h1>
+    <p class="lead">Ajustá las zonas arrastrando los puntos, generá el archivo y pasámelo por el chat. Yo lo aplico y el mapa del sitio se actualiza.</p>
+
+    <div class="panel">
+      <ol class="steps">
+        <li><b>Editar un punto:</b> tocá la zona y arrastrá los puntitos del borde. Para agregar un punto, arrastrá el puntito del medio de cada lado.</li>
+        <li><b>Dibujar zona nueva:</b> usá el ícono de polígono (arriba a la izquierda del mapa), hacé clic en cada esquina y cerrá tocando el primer punto. Te va a pedir un nombre.</li>
+        <li><b>Borrar zona:</b> ícono del tacho (arriba a la izquierda) y tocá la zona.</li>
+        <li><b>Terminar:</b> tocá <b>“Generar archivo”</b> abajo y luego <b>“Copiar”</b>. Pegámelo en el chat.</li>
+      </ol>
+      <div class="row">
+        <div class="field">
+          <label for="costo">Costo de envío ($)</label>
+          <input type="number" id="costo" value="1000" min="0" step="100" />
+        </div>
+        <div class="field">
+          <label for="tiempo">Tiempo estimado</label>
+          <input type="text" id="tiempo" value="30-40 min" />
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="out panel">
+      <button class="btn red" id="btn-gen">Generar archivo</button>
+      <button class="btn ghost" id="btn-copy" style="display:none">Copiar</button>
+      <span id="copied" class="ok" style="display:none"> ¡Copiado! Pegámelo en el chat.</span>
+      <div style="margin-top:12px">
+        <textarea id="out" placeholder="Acá aparece el archivo cuando tocás “Generar archivo”…" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+    var PALETTE = ["#f5a623", "#4a90e2", "#7ed321", "#e0231a", "#9b59b6", "#16a085"];
+    var colorIdx = 0;
+    var cfg = null;
+    var round = function (n) { return Math.round(n * 1e6) / 1e6; };
+
+    var map = L.map("map").setView([-34.7118, -58.3260], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19, attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    map.pm.addControls({
+      position: "topleft",
+      drawPolygon: true, editMode: true, dragMode: true, removalMode: true,
+      drawMarker: false, drawPolyline: false, drawCircle: false,
+      drawCircleMarker: false, drawRectangle: false, drawText: false,
+      cutPolygon: false, rotateMode: false
+    });
+
+    function styleZone(layer, color) {
+      layer.setStyle({ color: color, fillColor: color, fillOpacity: 0.25, weight: 2 });
+    }
+    function labelZone(layer, name) {
+      layer._zoneName = name;
+      layer.bindTooltip(name, { permanent: true, direction: "center", className: "zone-lbl" });
+    }
+
+    // Cargar zonas actuales
+    fetch("zonas.json").then(function (r) { return r.json(); }).then(function (data) {
+      cfg = data;
+      document.getElementById("costo").value = cfg.envio.costo;
+      document.getElementById("tiempo").value = cfg.envio.tiempo;
+
+      // Local (no editable)
+      L.marker([cfg.local.lat, cfg.local.lng], { pmIgnore: true }).addTo(map)
+        .bindPopup("<b>" + cfg.local.nombre + "</b><br>" + cfg.local.direccion);
+
+      var group = [];
+      cfg.zonas.forEach(function (z) {
+        var layer = L.polygon(z.poligono).addTo(map);
+        layer._zoneColor = z.color;
+        styleZone(layer, z.color);
+        labelZone(layer, z.nombre);
+        colorIdx = Math.max(colorIdx, PALETTE.indexOf(z.color) + 1);
+        group.push(layer);
+      });
+      if (group.length) map.fitBounds(L.featureGroup(group).getBounds().pad(0.15));
+      renderLegend();
+    });
+
+    function renderLegend() {
+      var el = document.getElementById("legend");
+      var items = [];
+      map.eachLayer(function (l) {
+        if (l instanceof L.Polygon && l._zoneName) {
+          items.push('<span><i style="background:' + l._zoneColor + '"></i>' + l._zoneName + "</span>");
+        }
+      });
+      el.innerHTML = items.join("");
+    }
+
+    // Zona nueva
+    map.on("pm:create", function (e) {
+      var layer = e.layer;
+      if (!(layer instanceof L.Polygon)) return;
+      var name = prompt("Nombre de la nueva zona:", "Nueva zona") || "Nueva zona";
+      var color = PALETTE[colorIdx++ % PALETTE.length];
+      layer._zoneColor = color;
+      styleZone(layer, color);
+      labelZone(layer, name);
+      renderLegend();
+    });
+
+    map.on("pm:remove", renderLegend);
+
+    // Generar el JSON
+    document.getElementById("btn-gen").addEventListener("click", function () {
+      if (!cfg) return;
+      var zonas = [];
+      map.eachLayer(function (l) {
+        if (l instanceof L.Polygon && l._zoneName) {
+          var pts = l.getLatLngs()[0].map(function (p) { return [round(p.lat), round(p.lng)]; });
+          zonas.push({ nombre: l._zoneName, color: l._zoneColor, poligono: pts });
+        }
+      });
+      var out = {
+        local: cfg.local,
+        envio: { costo: Number(document.getElementById("costo").value), tiempo: document.getElementById("tiempo").value },
+        zonas: zonas
+      };
+      document.getElementById("out").value = JSON.stringify(out, null, 2);
+      document.getElementById("btn-copy").style.display = "inline-block";
+      renderLegend();
+    });
+
+    document.getElementById("btn-copy").addEventListener("click", function () {
+      var ta = document.getElementById("out");
+      ta.select();
+      navigator.clipboard.writeText(ta.value).then(function () {
+        document.getElementById("copied").style.display = "inline";
+        setTimeout(function () { document.getElementById("copied").style.display = "none"; }, 3000);
+      }).catch(function () { document.execCommand("copy"); });
+    });
+  </script>
+</body>
+</html>
